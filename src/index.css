@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* A Guilda Ecosystem Palette */
+  --color-bg-body: #050505;
+  /* Deep Black */
+  --color-bg-paper: #050505;
+  /* Seamless */
+
+  --color-text-body: #b0b0b0;
+  /* Silver/Grey for body (calm) */
+  --color-text-heading: #e0e0e0;
+  /* Bright Silver for headings */
+  --color-text-meta: #525252;
+  /* Darker Grey for meta */
+
+  --color-accent: #C5A059;
+  /* A Guilda Gold (Matte) */
+  --color-border: #222222;
+  /* Subtle border */
+
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1.0rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.75rem;
+  --font-size-xxl: 2.5rem;
+
+  /* Rhythm */
+  --measure-text: 68ch;
+  --measure-wide: 90ch;
+  --leading-tight: 1.15;
+  --leading-relaxed: 1.7;
+}
+
+@layer base {
+  html {
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  body {
+    background-color: var(--color-bg-body);
+    color: var(--color-text-body);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--font-size-base);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Headings: More 'Breath' */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-text-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: var(--leading-tight);
+    margin-top: 3em;
+    margin-bottom: 1em;
+  }
+
+  h1 {
+    font-size: var(--font-size-xxl);
+    margin-top: 0;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    font-size: var(--font-size-xl);
+    border-top: 1px solid var(--color-border);
+    padding-top: 2em;
+    margin-top: 4em;
+  }
+
+  h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--color-accent);
+    /* Gold subheaders */
+  }
+
+  p {
+    margin-bottom: 1.5em;
+  }
+
+  a {
+    transition-property: all;
+    transition-duration: 200ms;
+  }
+
+  a:hover {
+    color: var(--color-accent);
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: #000;
+  }
+}
+
+@layer utilities {
+  .text-meta {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-meta);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .layout-reading {
+    max-width: var(--measure-text);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* The "Signature" - Subtle Gold Halftone */
+  .editorial-separator {
+    height: 4px;
+    width: 100%;
+    max-width: 120px;
+    margin: 2em auto;
+    background-image: radial-gradient(var(--color-accent) 1px, transparent 1px);
+    background-size: 4px 4px;
+    opacity: 0.4;
+  }
+
+  /* Data Tables - "Figure" Style */
+  .prose table {
+    width: 100%;
+    margin: 3em 0;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8em;
+  }
+
+  .prose th {
+    text-align: left;
+    padding: 1em 0.5em;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-accent);
+    /* Gold Headers */
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .prose td {
+    padding: 1em 0.5em;
+    border-bottom: 1px solid #1a1a1a;
+    color: var(--color-text-body);
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-bg-body);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+}
