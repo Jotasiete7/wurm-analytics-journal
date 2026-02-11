@@ -33,6 +33,8 @@ const ResearchView = () => {
     if (!doc) return <Navigate to="/" replace />;
 
     const { title, content, excerpt } = getLocalizedContent(doc, lang);
+    // Defensive fix: Replace literal "\n" characters with actual newlines if they exist
+    const safeContent = content.replace(/\\n/g, '\n');
 
     return (
         <>
@@ -87,7 +89,7 @@ const ResearchView = () => {
                     prose-strong:text-wurm-text prose-strong:font-semibold
                     prose-blockquote:border-l-wurm-accent prose-blockquote:text-wurm-text prose-blockquote:font-serif prose-blockquote:italic
                     marker:text-wurm-accent">
-                    <Markdown>{content}</Markdown>
+                    <Markdown>{safeContent}</Markdown>
                 </div>
 
                 {/* Footer / Interaction */}
