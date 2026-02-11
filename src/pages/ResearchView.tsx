@@ -55,7 +55,7 @@ const ResearchView = () => {
                 <header className="mb-16">
                     {/* Article Seal */}
                     <div className="mb-6 opacity-80">
-                        <img src="/logo.png" alt="" className="h-5 w-auto object-contain" />
+                        <img src="/logo-sm.webp" alt="" className="h-5 w-auto object-contain" />
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 mb-6 text-[10px] font-mono uppercase tracking-widest text-wurm-muted">
@@ -66,6 +66,8 @@ const ResearchView = () => {
                         <span>{doc.date}</span>
                         <span>•</span>
                         <span>{doc.views} Reads</span>
+                        <span>•</span>
+                        <span>{doc.readingTime}</span>
                     </div>
 
                     <h1 className="text-3xl md:text-5xl font-serif font-bold text-wurm-text leading-[1.15] mb-8 tracking-tight">

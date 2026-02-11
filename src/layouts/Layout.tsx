@@ -25,7 +25,7 @@ const Layout = () => {
                     <div className="flex-1 flex justify-center">
                         <NavLink to="/" className="group block p-2">
                             <img
-                                src="/logo.png"
+                                src="/logo-sm.webp"
                                 alt="A Guilda Analytics"
                                 className="h-8 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-[0_0_10px_rgba(212,180,131,0.1)]"
                             />
@@ -67,7 +67,7 @@ const Layout = () => {
 
                     {/* Brand Reinforcement (Minimal "a") */}
                     <div className="mb-8 opacity-20 hover:opacity-40 transition-opacity">
-                        <img src="/logo.png" alt="A Guilda" className="h-5 w-auto grayscale" />
+                        <img src="/logo-sm.webp" alt="A Guilda" className="h-5 w-auto grayscale" />
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-between items-center w-full">

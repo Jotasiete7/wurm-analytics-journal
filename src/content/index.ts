@@ -7,6 +7,7 @@ export interface Document {
     date: string;
     votes: number;
     views: number;
+    readingTime: string; // e.g. "5 min read"
     author_id?: string;
 
     // Bilingual Content
@@ -34,6 +35,7 @@ export const documents: Document[] = [
         date: '2026-02-01',
         votes: 12,
         views: 345,
+        readingTime: '4 min read',
 
         title_en: 'Tool Quality Does Not Affect Crushing Yield',
         title_pt: 'Qualidade da Ferramenta Não Afeta o Rendimento da Britagem',
@@ -73,6 +75,7 @@ A qualidade da ferramenta **não tem impacto mensurável**.
         date: '2026-01-28',
         votes: 45,
         views: 1202,
+        readingTime: '7 min read',
 
         title_en: 'Lockpicking Success: The QL 50 Threshold',
         title_pt: 'Sucesso no Lockpicking: O Limiar do QL 50',

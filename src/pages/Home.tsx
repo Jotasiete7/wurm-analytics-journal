@@ -33,7 +33,7 @@ const Home = () => {
 
                     {/* GHOST LOGO BACKGROUND */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vh] h-[120vh] opacity-[0.03] pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden">
-                        <img src="/logo.png" alt="" className="w-full h-full object-contain scale-150 grayscale" />
+                        <img src="/logo.webp" alt="" className="w-full h-full object-contain scale-150 grayscale" />
                     </div>
 
                     <div className="flex flex-col items-center text-center max-w-3xl mx-auto relative z-10">
@@ -67,7 +67,7 @@ const Home = () => {
                 {/* LEFT COLUMN - Latest Research */}
                 <div className="md:col-span-8">
                     <div className="flex items-center gap-4 mb-12">
-                        <h2 className="text-sm font-mono uppercase tracking-widest text-wurm-muted">Latest Research</h2>
+                        <h2 className="text-xs font-mono uppercase tracking-widest text-wurm-muted">Latest Research</h2>
                         <div className="h-px bg-wurm-border flex-grow opacity-50"></div>
                     </div>
 
@@ -81,6 +81,8 @@ const Home = () => {
                                             <span className="text-wurm-accent">{doc.category}</span>
                                             <span>•</span>
                                             <span>{doc.date}</span>
+                                            <span>•</span>
+                                            <span>{doc.readingTime}</span>
                                         </div>
 
                                         <h3 className="text-2xl font-serif font-bold text-wurm-text mb-3 leading-tight group-hover:text-wurm-accent transition-colors">
@@ -110,7 +112,7 @@ const Home = () => {
 
                     {/* Trending */}
                     <section>
-                        <div className="flex items-center gap-4 mb-8">
+                        <div className="flex items-center gap-4 mb-12">
                             <h2 className="text-xs font-mono uppercase tracking-widest text-wurm-muted">Trending</h2>
                             <div className="h-px bg-wurm-border flex-grow opacity-50"></div>
                         </div>
