@@ -8,7 +8,7 @@ const Layout = () => {
         <div className="min-h-screen bg-wurm-bg flex flex-col items-center selection:bg-wurm-accent selection:text-black">
             {/* Header: Minimal Institutional */}
             <header className="sticky top-0 z-50 w-full bg-wurm-bg/95 backdrop-blur-sm border-b border-wurm-border/50">
-                <div className="max-w-[var(--spacing-measure-wide)] mx-auto px-6 h-20 flex items-center justify-between">
+                <div className="max-w-[var(--spacing-measure-wide)] mx-auto px-6 py-6 flex items-center justify-between">
 
                     {/* Left: Portal Link (Minimal) */}
                     <div className="flex-1 flex justify-start">
@@ -21,10 +21,14 @@ const Layout = () => {
                         </a>
                     </div>
 
-                    {/* Center: Logotype (Serif) */}
+                    {/* Center: Halftone Logo (Primary Brand) */}
                     <div className="flex-1 flex justify-center">
-                        <NavLink to="/" className="text-xl md:text-2xl font-serif font-bold text-wurm-text tracking-tight hover:opacity-90 transition-opacity">
-                            A Guilda <span className="text-wurm-accent">Analytics</span>
+                        <NavLink to="/" className="group block p-2">
+                            <img
+                                src="/logo.png"
+                                alt="A Guilda Analytics"
+                                className="h-8 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-[0_0_10px_rgba(212,180,131,0.1)]"
+                            />
                         </NavLink>
                     </div>
 
@@ -53,20 +57,28 @@ const Layout = () => {
             </header>
 
             {/* Main Content */}
-            <main className="w-full max-w-[var(--spacing-measure-wide)] px-6 py-16 flex-grow">
+            <main className="w-full max-w-[var(--spacing-measure-wide)] px-6 py-16 flex-grow relative z-10">
                 <Outlet />
             </main>
 
             {/* Footer */}
-            <footer className="w-full border-t border-wurm-border/30 mt-auto">
-                <div className="max-w-[var(--spacing-measure-wide)] mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center opacity-60">
-                    <div className="text-xs font-mono text-wurm-muted uppercase tracking-widest mb-4 md:mb-0">
-                        &copy; 2026 A Guilda. All rights dedicated.
+            <footer className="w-full border-t border-wurm-border/30 mt-auto relative z-20 bg-wurm-bg">
+                <div className="max-w-[var(--spacing-measure-wide)] mx-auto px-6 py-12 flex flex-col items-center opacity-60">
+
+                    {/* Brand Reinforcement (Minimal "a") */}
+                    <div className="mb-8 opacity-20 hover:opacity-40 transition-opacity">
+                        <img src="/logo.png" alt="A Guilda" className="h-5 w-auto grayscale" />
                     </div>
-                    <div className="flex gap-6 text-xs font-mono text-wurm-muted uppercase tracking-widest">
-                        <a href="https://wurm-recipe-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Recipes</a>
-                        <a href="https://wurm-mining-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Mining</a>
-                        <a href="#" className="hover:text-wurm-accent transition-colors">Legal</a>
+
+                    <div className="flex flex-col md:flex-row justify-between items-center w-full">
+                        <div className="text-xs font-mono text-wurm-muted uppercase tracking-widest mb-4 md:mb-0">
+                            &copy; 2026 A Guilda. All rights dedicated.
+                        </div>
+                        <div className="flex gap-6 text-xs font-mono text-wurm-muted uppercase tracking-widest">
+                            <a href="https://wurm-recipe-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Recipes</a>
+                            <a href="https://wurm-mining-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Mining</a>
+                            <a href="#" className="hover:text-wurm-accent transition-colors">Legal</a>
+                        </div>
                     </div>
                 </div>
             </footer>

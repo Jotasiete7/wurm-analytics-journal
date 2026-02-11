@@ -25,12 +25,18 @@ const Home = () => {
     const recentDocs = docs.slice(1);
 
     return (
-        <div className="max-w-[var(--spacing-measure-wide)] mx-auto animate-in fade-in duration-700">
+        <div className="max-w-[var(--spacing-measure-wide)] mx-auto animate-in fade-in duration-700 relative">
 
             {/* HERO SECTION - Featured Article */}
             {featuredDoc && (
-                <section className="mb-24 md:mb-32">
-                    <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+                <section className="mb-24 md:mb-32 relative">
+
+                    {/* GHOST LOGO BACKGROUND */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vh] h-[120vh] opacity-[0.03] pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden">
+                        <img src="/logo.png" alt="" className="w-full h-full object-contain scale-150 grayscale" />
+                    </div>
+
+                    <div className="flex flex-col items-center text-center max-w-3xl mx-auto relative z-10">
                         <span className="mb-6 px-3 py-1 border border-wurm-accent/30 rounded-full text-[10px] font-mono uppercase tracking-widest text-wurm-accent">
                             Featured {featuredDoc.category}
                         </span>

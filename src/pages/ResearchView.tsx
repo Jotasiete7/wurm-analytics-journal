@@ -53,6 +53,11 @@ const ResearchView = () => {
 
                 {/* Header - Editorial Style */}
                 <header className="mb-16">
+                    {/* Article Seal */}
+                    <div className="mb-6 opacity-80">
+                        <img src="/logo.png" alt="" className="h-5 w-auto object-contain" />
+                    </div>
+
                     <div className="flex flex-wrap items-center gap-4 mb-6 text-[10px] font-mono uppercase tracking-widest text-wurm-muted">
                         <span className="px-2 py-1 border border-wurm-border rounded bg-wurm-panel text-wurm-accent">
                             {doc.category}
