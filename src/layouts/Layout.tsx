@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { ArrowLeft, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 const Layout = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     // Close menu on route change
     useEffect(() => {
@@ -110,7 +111,11 @@ const Layout = () => {
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4 text-center md:text-left">
-                        <div className="text-xs font-mono text-wurm-muted uppercase tracking-widest">
+                        <div
+                            className="text-xs font-mono text-wurm-muted uppercase tracking-widest cursor-default select-none hover:text-wurm-text transition-colors"
+                            onDoubleClick={() => navigate('/admin')}
+                            title="v1.0.0"
+                        >
                             &copy; 2026 A Guilda. All rights dedicated.
                         </div>
                         <div className="flex gap-6 text-xs font-mono text-wurm-muted uppercase tracking-widest justify-center">
