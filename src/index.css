@@ -42,8 +42,6 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: var(--font-size-base);
-    line-height: var(--leading-relaxed);
   }
 
   /* Headings: More 'Breath' */

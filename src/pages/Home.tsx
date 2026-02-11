@@ -49,17 +49,17 @@ const Home = () => {
         <section className="animate-in fade-in duration-700">
             {/* FEATURED STORY HERO */}
             <div className="mb-24 relative group cursor-pointer">
-                <NavLink to={`/research/${featured.slug}`} className="block">
-                    <div className="absolute inset-0 bg-gradient-to-b from-wurm-accent/5 via-transparent to-transparent rounded-3xl blur-3xl -z-10 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <NavLink to={`/research/${featured.slug}`} className="block relative z-10">
+                    <div className="absolute inset-0 bg-gradient-to-b from-wurm-accent/10 via-transparent to-transparent rounded-3xl blur-3xl -z-10 opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
 
                     <div className="text-center py-12 md:py-20 border-b border-wurm-border/50">
                         <div className="flex items-center justify-center gap-3 text-xs font-mono tracking-widest text-wurm-accent mb-6 uppercase">
-                            <span className="bg-wurm-accent/10 px-2 py-1 rounded">{featured.category}</span>
+                            <span className="bg-wurm-accent/10 px-2 py-1 rounded border border-wurm-accent/20">{featured.category}</span>
                             <span className="text-wurm-muted">•</span>
                             <span>New Arrival</span>
                         </div>
 
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight mb-8 max-w-4xl mx-auto group-hover:text-wurm-accent transition-colors duration-300">
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight mb-8 max-w-4xl mx-auto group-hover:text-wurm-accent transition-colors duration-300 drop-shadow-sm">
                             {featuredContent.title}
                         </h1>
 
@@ -67,7 +67,7 @@ const Home = () => {
                             {featuredContent.excerpt}
                         </p>
 
-                        <div className="inline-flex items-center gap-2 text-sm font-mono text-wurm-accent border border-wurm-accent/30 rounded-full px-6 py-2 group-hover:bg-wurm-accent group-hover:text-black transition-all duration-300">
+                        <div className="inline-flex items-center gap-2 text-sm font-bold tracking-wider font-mono text-wurm-bg bg-wurm-accent border border-wurm-accent rounded-full px-8 py-3 group-hover:bg-wurm-accentDim group-hover:border-wurm-accentDim transition-all duration-300 shadow-lg shadow-wurm-accent/20">
                             {lang === 'en' ? 'Read Analysis' : 'Ler Análise'} <ArrowRight size={14} />
                         </div>
                     </div>
