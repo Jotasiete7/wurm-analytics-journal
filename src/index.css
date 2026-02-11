@@ -1,83 +1,74 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  /* A Guilda Ecosystem Palette */
-  --color-bg-body: #050505;
-  --color-bg-paper: #0a0a0a;
+@theme {
+  /* Colors */
+  --color-wurm-bg: #050505;
+  --color-wurm-panel: #0a0a0a;
+  --color-wurm-border: #262626;
+  --color-wurm-accent: #d4b483;
+  --color-wurm-accent-dim: #8a7453;
+  --color-wurm-success: #3e6b46;
+  --color-wurm-warning: #b45309;
+  --color-wurm-text: #e5e5e5;
+  --color-wurm-muted: #737373;
 
-  --color-text-body: #e5e5e5;
-  --color-text-heading: #ffffff;
-  --color-text-meta: #737373;
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-serif: 'Playfair Display', serif;
 
-  --color-accent: #d4b483;
-  --color-accent-dim: #8a7453;
-  --color-border: #262626;
-
-  /* Typography Scale */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1.0rem;
-  --font-size-md: 1.125rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.75rem;
-  --font-size-xxl: 2.5rem;
-
-  /* Rhythm */
-  --measure-text: 68ch;
-  --measure-wide: 120ch;
-  --leading-tight: 1.15;
-  --leading-relaxed: 1.7;
+  /* Spacing / Rhythm */
+  --spacing-measure-text: 68ch;
+  --spacing-measure-wide: 120ch;
 }
 
+/* Base Styles */
 @layer base {
   html {
     font-feature-settings: "cv11", "ss01";
   }
 
   body {
-    background-color: var(--color-bg-body);
-    color: var(--color-text-body);
-    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--color-wurm-bg);
+    color: var(--color-wurm-text);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.7;
   }
 
-  /* Headings: More 'Breath' */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    color: var(--color-text-heading);
+    color: #ffffff;
     font-weight: 600;
     letter-spacing: -0.02em;
-    line-height: var(--leading-tight);
+    line-height: 1.15;
     margin-top: 3em;
     margin-bottom: 1em;
   }
 
   h1 {
-    font-size: var(--font-size-xxl);
+    font-size: 2.5rem;
     margin-top: 0;
     font-weight: 700;
     letter-spacing: -0.03em;
   }
 
   h2 {
-    font-size: var(--font-size-xl);
-    border-top: 1px solid var(--color-border);
+    font-size: 1.75rem;
+    border-top: 1px solid var(--color-wurm-border);
     padding-top: 2em;
     margin-top: 4em;
   }
 
   h3 {
-    font-size: var(--font-size-lg);
+    font-size: 1.25rem;
     font-weight: 500;
-    color: var(--color-accent);
-    /* Gold subheaders */
+    color: var(--color-wurm-accent);
   }
 
   p {
@@ -90,82 +81,32 @@
   }
 
   a:hover {
-    color: var(--color-accent);
+    color: var(--color-wurm-accent);
   }
 
   ::selection {
-    background-color: var(--color-accent);
+    background-color: var(--color-wurm-accent);
     color: #000;
   }
 }
 
+/* Utilities */
 @layer utilities {
   .text-meta {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-meta);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-wurm-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
 
-  .layout-reading {
-    max-width: var(--measure-text);
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* The "Signature" - Subtle Gold Halftone */
   .editorial-separator {
     height: 4px;
     width: 100%;
     max-width: 120px;
     margin: 2em auto;
-    background-image: radial-gradient(var(--color-accent) 1px, transparent 1px);
+    background-image: radial-gradient(var(--color-wurm-accent) 1px, transparent 1px);
     background-size: 4px 4px;
     opacity: 0.4;
-  }
-
-  /* Data Tables - "Figure" Style */
-  .prose table {
-    width: 100%;
-    margin: 3em 0;
-    border-collapse: collapse;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8em;
-  }
-
-  .prose th {
-    text-align: left;
-    padding: 1em 0.5em;
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-accent);
-    /* Gold Headers */
-    font-weight: normal;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .prose td {
-    padding: 1em 0.5em;
-    border-bottom: 1px solid #1a1a1a;
-    color: var(--color-text-body);
-  }
-
-  /* Custom Scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--color-bg-body);
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: 3px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--color-accent);
   }
 }
