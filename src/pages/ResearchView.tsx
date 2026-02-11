@@ -7,45 +7,30 @@ import { articleService } from '../services/articles';
 import VoteControl from '../components/VoteControl';
 import Spinner from '../components/Spinner';
 import SEO from '../components/SEO';
-import { Calendar, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const ResearchView = () => {
     const { slug } = useParams();
     const { lang } = useLanguage();
     const [doc, setDoc] = useState<Document | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
 
     useEffect(() => {
-        const fetchArticle = async () => {
-            if (!slug) return;
-            try {
+        const fetchDoc = async () => {
+            if (slug) {
                 const data = await articleService.getBySlug(slug);
+                setDoc(data || null);
                 if (data) {
-                    setDoc(data);
-                    // Increment view count
-                    articleService.incrementView(data.id);
-                } else {
-                    setError(true);
+                    await articleService.incrementView(data.id);
                 }
-            } catch (err) {
-                console.error(err);
-                setError(true);
-            } finally {
-                setLoading(false);
             }
+            setLoading(false);
         };
-
-        fetchArticle();
+        fetchDoc();
     }, [slug]);
 
-    if (loading) {
-        return <Spinner message="Loading analysis..." />;
-    }
-
-    if (error || !doc) {
-        return <Navigate to="/" replace />;
-    }
+    if (loading) return <Spinner />;
+    if (!doc) return <Navigate to="/" replace />;
 
     const { title, content, excerpt } = getLocalizedContent(doc, lang);
 
@@ -56,91 +41,63 @@ const ResearchView = () => {
                 description={excerpt}
                 type="article"
             />
-            <ResearchContent doc={doc} title={title} content={content} excerpt={excerpt} />
-        </>
-    );
-};
 
-const ResearchContent = ({ doc, title, content, excerpt }: { doc: Document; title: string; content: string; excerpt: string }) => {
-    // SEO: Inject JSON-LD (Schema.org)
-    useEffect(() => {
-        const schema = {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": title?.substring(0, 110),
-            "description": excerpt?.substring(0, 160),
-            "datePublished": doc.date,
-            "author": {
-                "@type": "Organization",
-                "name": "Wurm Analytics"
-            }
-        };
-
-        const script = document.createElement('script');
-        script.type = "application/ld+json";
-        script.text = JSON.stringify(schema);
-        document.head.appendChild(script);
-
-        return () => {
-            document.head.removeChild(script);
-        };
-    }, [doc, title, excerpt]);
-
-    return (
-        <article className="min-h-full flex flex-col animate-in fade-in duration-500 max-w-3xl mx-auto">
-            {/* Header */}
-            <header className="mb-12 pt-8">
-                <div className="flex items-center space-x-3 text-xs font-mono mb-8 opacity-60">
-                    <NavLink to="/" className="hover:text-wurm-accent transition-colors flex items-center gap-1">
-                        <ArrowLeft size={12} /> INDEX
+            <article className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Back Link - Minimal */}
+                <div className="mb-12">
+                    <NavLink to="/" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-wurm-muted hover:text-wurm-accent transition-colors">
+                        <ArrowLeft size={12} />
+                        <span>Return to Index</span>
                     </NavLink>
-                    <span className="text-wurm-border">/</span>
-                    <span className="text-wurm-accent bg-wurm-accent/10 px-1.5 py-0.5 rounded">{doc.category}</span>
-                    <span className="text-wurm-border">/</span>
-                    <span className="flex items-center gap-1">
-                        <Calendar size={12} /> {doc.date}
-                    </span>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight tracking-tight mb-8 drop-shadow-sm">
-                    {title}
-                </h1>
+                {/* Header - Editorial Style */}
+                <header className="mb-16">
+                    <div className="flex flex-wrap items-center gap-4 mb-6 text-[10px] font-mono uppercase tracking-widest text-wurm-muted">
+                        <span className="px-2 py-1 border border-wurm-border rounded bg-wurm-panel text-wurm-accent">
+                            {doc.category}
+                        </span>
+                        <span>•</span>
+                        <span>{doc.date}</span>
+                        <span>•</span>
+                        <span>{doc.views} Reads</span>
+                    </div>
 
-                <div className="w-20 h-1 bg-wurm-accent/30 rounded-full mb-8"></div>
+                    <h1 className="text-3xl md:text-5xl font-serif font-bold text-wurm-text leading-[1.15] mb-8 tracking-tight">
+                        {title}
+                    </h1>
 
-                <div className="text-xl text-wurm-text/90 font-serif italic leading-relaxed border-l-4 border-wurm-accent/50 pl-6 py-2 bg-wurm-panel/30 rounded-r-lg">
-                    {excerpt}
+                    <div className="text-xl md:text-2xl text-wurm-muted font-light leading-relaxed border-l-2 border-wurm-accent/30 pl-6 py-1">
+                        {excerpt}
+                    </div>
+                </header>
+
+                {/* Content - Typographic Focus */}
+                <div className="prose prose-invert prose-lg max-w-none 
+                    prose-headings:font-serif prose-headings:font-bold prose-headings:text-wurm-text
+                    prose-p:font-sans prose-p:text-wurm-muted prose-p:leading-relaxed
+                    prose-a:text-wurm-accent prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-wurm-text prose-strong:font-semibold
+                    prose-blockquote:border-l-wurm-accent prose-blockquote:text-wurm-text prose-blockquote:font-serif prose-blockquote:italic
+                    marker:text-wurm-accent">
+                    <Markdown>{content}</Markdown>
                 </div>
-            </header>
 
-            {/* Content Body */}
-            <div className="prose prose-invert prose-lg max-w-none 
-                prose-headings:font-serif prose-headings:text-wurm-text 
-                prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h2:text-wurm-accent 
-                prose-p:text-wurm-muted prose-p:leading-relaxed 
-                prose-strong:text-white prose-strong:font-semibold
-                prose-blockquote:border-l-wurm-accent prose-blockquote:bg-wurm-panel/50 prose-blockquote:py-1 prose-blockquote:pr-2
-                prose-a:text-wurm-accent prose-a:no-underline hover:prose-a:underline
-                prose-code:text-wurm-accent prose-code:bg-wurm-panel prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
-                ">
-                <Markdown>{content}</Markdown>
-            </div>
-
-            {/* Vote Control */}
-            <div className="my-16 flex justify-center">
-                <VoteControl
-                    docId={doc.id}
-                    initialVotes={doc.votes || 0}
-                    initialViews={doc.views || 0}
-                />
-            </div>
-
-            {/* Footer / Signature */}
-            <div className="mt-12 pt-12 border-t border-wurm-border text-center opacity-40">
-                <div className="w-2 h-2 bg-wurm-accent rounded-full mx-auto mb-4"></div>
-                <p className="text-xs font-mono tracking-widest uppercase text-wurm-muted">End of Analysis</p>
-            </div>
-        </article>
+                {/* Footer / Interaction */}
+                <div className="mt-24 pt-12 border-t border-wurm-border/30">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="text-sm font-mono text-wurm-muted">
+                            Did you find this analysis useful?
+                        </div>
+                        <VoteControl
+                            docId={doc.id}
+                            initialVotes={doc.votes}
+                            initialViews={doc.views}
+                        />
+                    </div>
+                </div>
+            </article>
+        </>
     );
 };
 

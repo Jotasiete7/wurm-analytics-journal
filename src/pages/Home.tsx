@@ -3,8 +3,7 @@ import { getLocalizedContent, type Document } from '../content';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useEffect, useState } from 'react';
 import { articleService } from '../services/articles';
-import Spinner from '../components/Spinner';
-import { Calendar, BarChart2, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const Home = () => {
     const { lang } = useLanguage();
@@ -14,121 +13,122 @@ const Home = () => {
     useEffect(() => {
         const fetchDocs = async () => {
             const data = await articleService.getAll();
-            if (data) {
-                setDocs(data);
-            }
+            if (data) setDocs(data);
             setLoading(false);
         };
         fetchDocs();
     }, []);
 
-    if (loading) {
-        return <Spinner message="Loading journal..." />;
-    }
+    if (loading) return null;
 
-    if (docs.length === 0) {
-        return (
-            <div className="min-h-[50vh] flex flex-col items-center justify-center text-wurm-muted opacity-50">
-                <BarChart2 size={48} className="mb-4 opacity-30" />
-                <span className="font-mono text-sm uppercase tracking-wider">Archive Empty</span>
-                <p className="text-xs mt-2 opacity-60">No research published yet.</p>
-            </div>
-        );
-    }
-
-    // Sort by date (already sorted by Supabase but good to be safe)
-    const sortedDocs = [...docs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    // Feature the latest, list the rest
-    const featured = sortedDocs[0];
-    const feed = sortedDocs.slice(1);
-
-    const featuredContent = getLocalizedContent(featured, lang);
+    const featuredDoc = docs[0];
+    const recentDocs = docs.slice(1);
 
     return (
-        <section className="animate-in fade-in duration-700">
-            {/* FEATURED STORY HERO */}
-            <div className="mb-24 relative group cursor-pointer">
-                <NavLink to={`/research/${featured.slug}`} className="block relative z-10">
-                    <div className="absolute inset-0 bg-gradient-to-b from-wurm-accent/10 via-transparent to-transparent rounded-3xl blur-3xl -z-10 opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
+        <div className="max-w-[var(--spacing-measure-wide)] mx-auto animate-in fade-in duration-700">
 
-                    <div className="text-center py-12 md:py-20 border-b border-wurm-border/50">
-                        <div className="flex items-center justify-center gap-3 text-xs font-mono tracking-widest text-wurm-accent mb-6 uppercase">
-                            <span className="bg-wurm-accent/10 px-2 py-1 rounded border border-wurm-accent/20">{featured.category}</span>
-                            <span className="text-wurm-muted">•</span>
-                            <span>New Arrival</span>
-                        </div>
+            {/* HERO SECTION - Featured Article */}
+            {featuredDoc && (
+                <section className="mb-24 md:mb-32">
+                    <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+                        <span className="mb-6 px-3 py-1 border border-wurm-accent/30 rounded-full text-[10px] font-mono uppercase tracking-widest text-wurm-accent">
+                            Featured {featuredDoc.category}
+                        </span>
 
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-tight mb-8 max-w-4xl mx-auto group-hover:text-wurm-accent transition-colors duration-300 drop-shadow-sm">
-                            {featuredContent.title}
+                        <h1 className="text-4xl md:text-6xl font-serif font-bold text-wurm-text leading-[1.1] mb-8 tracking-tight">
+                            <NavLink to={`/research/${featuredDoc.slug}`} className="hover:text-wurm-accent transition-colors">
+                                {getLocalizedContent(featuredDoc, lang).title}
+                            </NavLink>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-wurm-text/80 leading-relaxed max-w-2xl mx-auto mb-10 font-serif italic">
-                            {featuredContent.excerpt}
+                        <p className="text-lg md:text-xl text-wurm-muted mb-10 leading-relaxed font-light max-w-2xl">
+                            {getLocalizedContent(featuredDoc, lang).excerpt}
                         </p>
 
-                        <div className="inline-flex items-center gap-2 text-sm font-bold tracking-wider font-mono text-wurm-bg bg-wurm-accent border border-wurm-accent rounded-full px-8 py-3 group-hover:bg-wurm-accentDim group-hover:border-wurm-accentDim transition-all duration-300 shadow-lg shadow-wurm-accent/20">
-                            {lang === 'en' ? 'Read Analysis' : 'Ler Análise'} <ArrowRight size={14} />
-                        </div>
+                        <NavLink
+                            to={`/research/${featuredDoc.slug}`}
+                            className="group flex items-center gap-3 text-sm font-mono uppercase tracking-widest text-wurm-text hover:text-wurm-accent transition-colors"
+                        >
+                            <span>Read Analysis</span>
+                            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        </NavLink>
                     </div>
-                </NavLink>
-            </div>
+                </section>
+            )}
 
-            {/* RESEARCH GRID */}
-            {feed.length > 0 && (
-                <div className="space-y-12">
-                    <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-serif font-bold text-white">
-                            {lang === 'en' ? 'Recent Findings' : 'Descobertas Recentes'}
-                        </h2>
-                        <div className="h-px bg-wurm-border flex-grow"></div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-24">
+
+                {/* LEFT COLUMN - Latest Research */}
+                <div className="md:col-span-8">
+                    <div className="flex items-center gap-4 mb-12">
+                        <h2 className="text-sm font-mono uppercase tracking-widest text-wurm-muted">Latest Research</h2>
+                        <div className="h-px bg-wurm-border flex-grow opacity-50"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {feed.map(doc => {
-                            const content = getLocalizedContent(doc, lang);
-                            return (
-                                <NavLink
-                                    key={doc.id}
-                                    to={`/research/${doc.slug}`}
-                                    className="group flex flex-col bg-wurm-panel border border-wurm-border rounded-xl overflow-hidden hover:border-wurm-accent/50 transition-all duration-300 hover:shadow-lg hover:shadow-wurm-accent/5 hover:-translate-y-1"
-                                >
-                                    <div className="p-6 flex flex-col h-full">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className="text-[10px] font-mono uppercase tracking-widest text-wurm-accent bg-wurm-accent/5 px-2 py-1 rounded border border-wurm-accent/10">
-                                                {doc.category}
-                                            </span>
-                                            <div className="flex items-center gap-1 text-[10px] font-mono text-wurm-muted">
-                                                <Calendar size={12} />
-                                                {doc.date}
-                                            </div>
+                    <div className="space-y-12">
+                        {recentDocs.length > 0 ? (
+                            recentDocs.map((doc) => {
+                                const { title, excerpt } = getLocalizedContent(doc, lang);
+                                return (
+                                    <article key={doc.id} className="group flex flex-col items-start">
+                                        <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-wurm-muted mb-3">
+                                            <span className="text-wurm-accent">{doc.category}</span>
+                                            <span>•</span>
+                                            <span>{doc.date}</span>
                                         </div>
 
-                                        <h3 className="text-xl font-serif font-bold text-wurm-text group-hover:text-wurm-accent transition-colors mb-3 line-clamp-2">
-                                            {content.title}
+                                        <h3 className="text-2xl font-serif font-bold text-wurm-text mb-3 leading-tight group-hover:text-wurm-accent transition-colors">
+                                            <NavLink to={`/research/${doc.slug}`}>
+                                                {title}
+                                            </NavLink>
                                         </h3>
 
-                                        <p className="text-sm text-wurm-muted leading-relaxed mb-6 line-clamp-3 flex-grow">
-                                            {content.excerpt}
+                                        <p className="text-wurm-muted mb-4 leading-relaxed line-clamp-2 max-w-xl">
+                                            {excerpt}
                                         </p>
 
-                                        <div className="pt-4 border-t border-wurm-border/50 flex justify-between items-center mt-auto">
-                                            <div className="flex items-center gap-1.5 text-xs text-wurm-muted">
-                                                <BarChart2 size={14} />
-                                                <span>{doc.views} {lang === 'en' ? 'reads' : 'leituras'}</span>
-                                            </div>
-                                            <div className="text-wurm-accent opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">
-                                                <ArrowRight size={16} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </NavLink>
-                            );
-                        })}
+                                        <NavLink to={`/research/${doc.slug}`} className="text-xs text-wurm-text opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                                            Read more <ArrowRight size={10} />
+                                        </NavLink>
+                                    </article>
+                                );
+                            })
+                        ) : (
+                            <div className="text-wurm-muted italic">No other articles found.</div>
+                        )}
                     </div>
                 </div>
-            )}
-        </section>
+
+                {/* RIGHT COLUMN - Trending & Topics */}
+                <div className="md:col-span-4 space-y-16">
+
+                    {/* Trending */}
+                    <section>
+                        <div className="flex items-center gap-4 mb-8">
+                            <h2 className="text-xs font-mono uppercase tracking-widest text-wurm-muted">Trending</h2>
+                            <div className="h-px bg-wurm-border flex-grow opacity-50"></div>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Mock Trending Data - In real app, sort by views */}
+                            {docs.slice(0, 5).map((doc, i) => (
+                                <div key={doc.id} className="flex gap-4 items-baseline group">
+                                    <span className="text-3xl font-serif font-bold text-wurm-border/50 group-hover:text-wurm-accent/50 transition-colors">0{i + 1}</span>
+                                    <div className="flex flex-col">
+                                        <NavLink to={`/research/${doc.slug}`} className="font-medium text-wurm-text hover:text-wurm-accent transition-colors leading-snug">
+                                            {getLocalizedContent(doc, lang).title}
+                                        </NavLink>
+                                        <span className="text-[10px] text-wurm-muted mt-1 uppercase tracking-wide">
+                                            {doc.views} Reads
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
     );
 };
 
