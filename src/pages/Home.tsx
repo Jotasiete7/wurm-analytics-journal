@@ -29,25 +29,25 @@ const Home = () => {
 
             {/* HERO SECTION - Featured Article */}
             {featuredDoc && (
-                <section className="mb-24 md:mb-32 relative">
+                <section className="mb-16 md:mb-32 relative">
 
                     {/* GHOST LOGO BACKGROUND */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vh] h-[120vh] opacity-[0.03] pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden">
                         <img src="/logo.webp" alt="" className="w-full h-full object-contain scale-150 grayscale" />
                     </div>
 
-                    <div className="flex flex-col items-center text-center max-w-3xl mx-auto relative z-10">
+                    <div className="flex flex-col items-center text-center max-w-3xl mx-auto relative z-10 px-4">
                         <span className="mb-6 px-3 py-1 border border-wurm-accent/30 rounded-full text-[10px] font-mono uppercase tracking-widest text-wurm-accent">
                             Featured {featuredDoc.category}
                         </span>
 
-                        <h1 className="text-4xl md:text-6xl font-serif font-bold text-wurm-text leading-[1.1] mb-8 tracking-tight">
+                        <h1 className="text-3xl md:text-6xl font-serif font-bold text-wurm-text leading-[1.1] mb-6 md:mb-8 tracking-tight">
                             <NavLink to={`/research/${featuredDoc.slug}`} className="hover:text-wurm-accent transition-colors">
                                 {getLocalizedContent(featuredDoc, lang).title}
                             </NavLink>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-wurm-muted mb-10 leading-relaxed font-light max-w-2xl">
+                        <p className="text-base md:text-xl text-wurm-muted mb-8 md:mb-10 leading-relaxed font-light max-w-2xl">
                             {getLocalizedContent(featuredDoc, lang).excerpt}
                         </p>
 

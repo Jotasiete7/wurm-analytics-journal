@@ -54,7 +54,7 @@ const ResearchView = () => {
                 </div>
 
                 {/* Header - Editorial Style */}
-                <header className="mb-16">
+                <header className="mb-10 md:mb-16">
                     {/* Article Seal */}
                     <div className="mb-6 opacity-80">
                         <img src="/logo-sm.webp" alt="" className="h-5 w-auto object-contain" />
@@ -72,11 +72,11 @@ const ResearchView = () => {
                         <span>{doc.readingTime}</span>
                     </div>
 
-                    <h1 className="text-3xl md:text-5xl font-serif font-bold text-wurm-text leading-[1.15] mb-8 tracking-tight">
+                    <h1 className="text-3xl md:text-5xl font-serif font-bold text-wurm-text leading-[1.15] mb-6 md:mb-8 tracking-tight">
                         {title}
                     </h1>
 
-                    <div className="text-xl md:text-2xl text-wurm-muted font-light leading-relaxed border-l-2 border-wurm-accent/30 pl-6 py-1">
+                    <div className="text-lg md:text-2xl text-wurm-muted font-light leading-relaxed border-l-2 border-wurm-accent/30 pl-4 md:pl-6 py-1">
                         {excerpt}
                     </div>
                 </header>
