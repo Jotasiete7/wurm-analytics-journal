@@ -133,8 +133,19 @@ const Editor = () => {
 
     if (loading || uiStatus === 'loading') {
         return (
-            <div className="min-h-screen bg-[var(--color-bg-body)] flex items-center justify-center text-[var(--color-text-muted)]">
-                <Loader2 className="animate-spin mr-2" /> Loading...
+            <div className="min-h-screen bg-[var(--color-bg-body)] flex flex-col items-center justify-center text-[var(--color-text-muted)] font-mono text-xs gap-4">
+                <div className="flex items-center">
+                    <Loader2 className="animate-spin mr-2" />
+                    <span>Initializing Editor...</span>
+                </div>
+                <div className="p-4 border border-[var(--color-border)] bg-[#111] opacity-50 text-[10px] text-left">
+                    <p>DEBUG STATUS:</p>
+                    <p>Auth Loading: {loading ? 'YES' : 'NO'}</p>
+                    <p>UI Status: {uiStatus}</p>
+                    <p>User: {user ? user.email : 'NULL'}</p>
+                    <p>Role: {role || 'NULL'}</p>
+                    <p>Slug: {routeSlug || 'NULL'}</p>
+                </div>
             </div>
         );
     }
