@@ -16,15 +16,14 @@ function App() {
           <Route index element={<Home />} />
           <Route path="research/:slug" element={<ResearchView />} />
           <Route path="methodology" element={<Methodology />} />
-
-          {/* Admin Routes */}
-          <Route path="admin" element={<div className="pt-24"><Login /></div>} />
-          <Route path="admin/dashboard" element={<div className="pt-0"><Dashboard /></div>} />
-          <Route path="admin/editor" element={<div className="pt-0"><Editor /></div>} />
-          <Route path="admin/editor/:slug" element={<div className="pt-0"><Editor /></div>} />
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
+
+        {/* Admin Routes (Standalone) */}
+        <Route path="/admin" element={<Login />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/editor" element={<Editor />} />
+        <Route path="/admin/editor/:slug" element={<Editor />} />
       </Routes>
     </Router>
   );
