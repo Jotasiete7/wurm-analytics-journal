@@ -5,21 +5,15 @@
 :root {
   /* A Guilda Ecosystem Palette */
   --color-bg-body: #050505;
-  /* Deep Black */
-  --color-bg-paper: #050505;
-  /* Seamless */
+  --color-bg-paper: #0a0a0a;
 
-  --color-text-body: #b0b0b0;
-  /* Silver/Grey for body (calm) */
-  --color-text-heading: #e0e0e0;
-  /* Bright Silver for headings */
-  --color-text-meta: #525252;
-  /* Darker Grey for meta */
+  --color-text-body: #e5e5e5;
+  --color-text-heading: #ffffff;
+  --color-text-meta: #737373;
 
-  --color-accent: #C5A059;
-  /* A Guilda Gold (Matte) */
-  --color-border: #222222;
-  /* Subtle border */
+  --color-accent: #d4b483;
+  --color-accent-dim: #8a7453;
+  --color-border: #262626;
 
   /* Typography Scale */
   --font-size-xs: 0.75rem;
@@ -32,7 +26,7 @@
 
   /* Rhythm */
   --measure-text: 68ch;
-  --measure-wide: 90ch;
+  --measure-wide: 120ch;
   --leading-tight: 1.15;
   --leading-relaxed: 1.7;
 }
