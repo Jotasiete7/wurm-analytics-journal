@@ -15,7 +15,7 @@ const Dashboard = () => {
 
     const fetchArticles = async () => {
         setLoading(true);
-        const data = await articleService.getAll();
+        const data = await articleService.getAllForAdmin();
         if (data) {
             setArticles(data);
         }

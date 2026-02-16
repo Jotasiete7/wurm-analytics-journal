@@ -46,6 +46,20 @@ export const articleService = {
         return (data as DbArticle[]).map(this.mapToDocument);
     },
 
+    async getAllForAdmin() {
+        const { data, error } = await supabase
+            .from('articles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching articles:', error);
+            return [];
+        }
+
+        return (data as DbArticle[]).map(this.mapToDocument);
+    },
+
     async getBySlug(slug: string) {
         const { data, error } = await supabase
             .from('articles')
