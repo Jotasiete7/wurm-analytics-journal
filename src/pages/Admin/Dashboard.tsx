@@ -60,6 +60,10 @@ const Dashboard = () => {
                     <span className="text-xs text-[var(--color-text-meta)] uppercase">{user?.email}</span>
                 </div>
                 <div className="flex gap-4">
+                    <NavLink to="/" className="flex items-center gap-2 hover:text-[var(--color-accent)] uppercase tracking-wider">
+                        <Eye size={14} />
+                        <span>Home</span>
+                    </NavLink>
                     <NavLink to="/admin/editor" className="flex items-center gap-2 hover:text-[var(--color-accent)] uppercase tracking-wider">
                         <Plus size={14} />
                         <span>New Record</span>
