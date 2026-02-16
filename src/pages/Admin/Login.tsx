@@ -17,10 +17,20 @@ const Login = () => {
         setError('');
         setLogs([]);
         addLog('Starting login process...');
+        addLog(`Env Check: URL=${!!import.meta.env.VITE_SUPABASE_URL}, Key=${!!(import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY.length > 20)}`);
 
         try {
             addLog(`Attempting sign in for ${email}...`);
-            const { error } = await signIn(email, password);
+
+            // Race against a timeout
+            const timeoutPromise = new Promise<{ error: string }>((_, reject) =>
+                setTimeout(() => reject(new Error('Request timed out - Network or Supabase unreachable')), 10000)
+            );
+
+            const { error } = await Promise.race([
+                signIn(email, password),
+                timeoutPromise
+            ]);
 
             if (error) {
                 addLog(`Error returned: ${error}`);
