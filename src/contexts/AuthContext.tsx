@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
 
@@ -26,6 +26,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     const [loading, setLoading] = useState(true);
 
+    // Use ref to track current role without causing stale closures
+    const roleRef = useRef<UserRole | null>(role);
+
     const fetchRole = async (userId: string) => {
         try {
             // Race supabase call against a 2s timeout. 
@@ -45,9 +48,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (response.error || !response.data) {
                 console.warn('Error fetching role (or timeout):', response.error);
                 // RESILIENCE: If we already have a privileged role, keep it instead of downgrading due to network glitch
-                if (role === 'admin' || role === 'editor') {
-                    console.warn('Preserving existing role due to fetch failure:', role);
-                    return role;
+                const currentRole = roleRef.current;
+                if (currentRole === 'admin' || currentRole === 'editor') {
+                    console.warn('Preserving existing role due to fetch failure:', currentRole);
+                    return currentRole;
                 }
                 return 'reader';
             }
@@ -55,12 +59,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (err) {
             console.error('Unexpected error fetching role:', err);
             // RESILIENCE: Keep existing role on crash
-            if (role === 'admin' || role === 'editor') {
-                return role;
+            const currentRole = roleRef.current;
+            if (currentRole === 'admin' || currentRole === 'editor') {
+                return currentRole;
             }
             return 'reader';
         }
     };
+
+    // Keep roleRef in sync with role state
+    useEffect(() => {
+        roleRef.current = role;
+        if (role) {
+            localStorage.setItem('auth_role', role);
+        } else {
+            localStorage.removeItem('auth_role');
+        }
+    }, [role]);
 
     useEffect(() => {
         // Init Session
@@ -82,31 +97,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            // console.log('Auth Event:', event); // Debug
+            console.log('🔐 Auth Event:', event);
 
             setSession(session);
             setUser(session?.user ?? null);
 
             if (session?.user) {
-                // Optimization: Don't re-fetch role on TOKEN_REFRESH if we already have a role
+                // Optimization: Don't re-fetch role on TOKEN_REFRESHED if we already have a role
                 // This prevents session interruptions if the DB is momentarily slow during a refresh
-                if (event === 'TOKEN_REFRESHED' && role) {
+                if (event === 'TOKEN_REFRESHED' && roleRef.current) {
+                    console.log('✅ Token refreshed, keeping existing role:', roleRef.current);
                     return;
                 }
 
                 const userRole = await fetchRole(session.user.id);
                 setRole(userRole);
-                localStorage.setItem('auth_role', userRole); // Sync to storage
             } else {
                 setRole(null);
-                localStorage.removeItem('auth_role');
             }
 
             setLoading(false);
         });
 
         return () => subscription.unsubscribe();
-    }, []); // Removed dependency array based on lint (or keep empty if intended to run once)
+    }, []);
 
     const signIn = async (email: string, password: string) => {
         try {
