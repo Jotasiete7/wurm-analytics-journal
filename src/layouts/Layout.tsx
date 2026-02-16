@@ -2,9 +2,11 @@ import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { ArrowLeft, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 
 const Layout = () => {
+    const { t } = useLanguage();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -27,7 +29,7 @@ const Layout = () => {
                             className="group flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-wurm-muted hover:text-wurm-accent transition-colors"
                         >
                             <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />
-                            <span className="hidden sm:inline">Portal</span>
+                            <span className="hidden sm:inline">{t('Portal', 'Portal')}</span>
                         </a>
                     </div>
 

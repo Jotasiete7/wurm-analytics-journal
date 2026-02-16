@@ -9,7 +9,7 @@ import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 
 const Home = () => {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const [allDocs, setAllDocs] = useState<Document[]>([]);
     const [filteredDocs, setFilteredDocs] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
@@ -48,14 +48,17 @@ const Home = () => {
         <div className="max-w-[var(--spacing-measure-wide)] mx-auto animate-in fade-in duration-700 relative">
 
             {/* Search and Filters */}
-            <div className="mb-12 pt-8">
-                <SearchBar articles={allDocs} onFilter={setFilteredDocs} />
+            <div className="mb-12 space-y-4">
+                <SearchBar articles={allDocs} onFilter={setFilteredDocs} placeholder={t('Search articles...', 'Buscar artigos...')} />
                 <FilterBar articles={allDocs} onFilter={setFilteredDocs} />
 
                 {/* Results count */}
                 {filteredDocs.length !== allDocs.length && (
                     <p className="text-xs uppercase tracking-widest text-wurm-muted font-mono mb-4">
-                        {filteredDocs.length} {filteredDocs.length === 1 ? 'article' : 'articles'} found
+                        {filteredDocs.length} {t(
+                            filteredDocs.length === 1 ? 'article' : 'articles',
+                            filteredDocs.length === 1 ? 'artigo' : 'artigos'
+                        )} {t('found', 'encontrado' + (filteredDocs.length === 1 ? '' : 's'))}
                     </p>
                 )}
             </div>
@@ -71,7 +74,7 @@ const Home = () => {
 
                     <div className="flex flex-col items-center text-center max-w-3xl mx-auto relative z-10 px-4">
                         <span className="mb-6 px-3 py-1 border border-wurm-accent/30 rounded-full text-[10px] font-mono uppercase tracking-widest text-wurm-accent">
-                            Featured {featuredDoc.category}
+                            {t('Featured', 'Destaque')} {featuredDoc.category}
                         </span>
 
                         <h1 className="text-3xl md:text-6xl font-serif font-bold text-wurm-text leading-[1.1] mb-6 md:mb-8 tracking-tight">
@@ -88,7 +91,7 @@ const Home = () => {
                             to={`/research/${featuredDoc.slug}`}
                             className="group flex items-center gap-3 text-sm font-mono uppercase tracking-widest text-wurm-text hover:text-wurm-accent transition-colors"
                         >
-                            <span>Read Analysis</span>
+                            <span>{t('Read Analysis', 'Ler Análise')}</span>
                             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </NavLink>
                     </div>
@@ -100,8 +103,9 @@ const Home = () => {
                 {/* LEFT COLUMN - Latest Research */}
                 <div className="md:col-span-8">
                     <div className="flex items-center gap-4 mb-12">
-                        <h2 className="text-xs font-mono uppercase tracking-widest text-wurm-muted">Latest Research</h2>
-                        <div className="h-px bg-wurm-border flex-grow opacity-50"></div>
+                        <h2 className="text-xs font-mono uppercase tracking-widest text-wurm-muted mb-8">
+                            {t('Latest Research', 'Pesquisas Recentes')}
+                        </h2>    <div className="h-px bg-wurm-border flex-grow opacity-50"></div>
                     </div>
 
                     <div className="space-y-12">
@@ -112,9 +116,9 @@ const Home = () => {
                                     <Search size={48} />
                                 </div>
                                 <div>
-                                    <p className="text-lg text-wurm-text font-serif mb-2">No articles found</p>
+                                    <p className="text-lg text-wurm-text font-serif mb-2">{t('No articles found', 'Nenhum artigo encontrado')}</p>
                                     <p className="text-sm text-wurm-muted">
-                                        Try adjusting your search or filters
+                                        {t('Try adjusting your search or filters', 'Tente ajustar sua busca ou filtros')}
                                     </p>
                                 </div>
                             </div>

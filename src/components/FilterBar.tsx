@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import type { Document } from '../content';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface FilterBarProps {
     articles: Document[];
@@ -7,6 +9,7 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({ articles, onFilter }: FilterBarProps) {
+    const { t } = useLanguage();
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
@@ -30,34 +33,39 @@ export default function FilterBar({ articles, onFilter }: FilterBarProps) {
         onFilter(filtered);
     };
 
+    const clearFilters = () => {
+        setSelectedCategory(null);
+        setSelectedTags([]);
+    };
+
     useEffect(() => {
         handleFilter();
     }, [selectedCategory, selectedTags, articles]);
 
-    const hasActiveFilters = selectedCategory || selectedTags.length > 0;
-
     return (
         <div className="space-y-4 mb-8 pb-8 border-b border-wurm-border">
-            {/* Categories */}
+            {/* Category Filter */}
             {categories.length > 0 && (
-                <div className="flex gap-2 flex-wrap items-center">
-                    <span className="text-[10px] uppercase tracking-widest text-wurm-muted font-mono">Category:</span>
+                <div className="flex flex-wrap gap-2">
+                    <span className="text-xs text-wurm-muted uppercase tracking-wider font-mono">
+                        {t('Category:', 'Categoria:')}
+                    </span>
                     <button
                         onClick={() => setSelectedCategory(null)}
                         className={`px-3 py-1 text-[10px] uppercase tracking-wider border transition-colors ${!selectedCategory
-                                ? 'border-wurm-accent text-wurm-accent bg-wurm-accent/10'
-                                : 'border-wurm-border text-wurm-muted hover:border-wurm-accent hover:text-wurm-accent'
+                            ? 'border-wurm-accent text-wurm-accent bg-wurm-accent/10'
+                            : 'border-wurm-border text-wurm-muted hover:border-wurm-accent hover:text-wurm-accent'
                             }`}
                     >
-                        All
+                        {t('All', 'Todos')}
                     </button>
                     {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-3 py-1 text-[10px] uppercase tracking-wider border transition-colors ${selectedCategory === cat
-                                    ? 'border-wurm-accent text-wurm-accent bg-wurm-accent/10'
-                                    : 'border-wurm-border text-wurm-muted hover:border-wurm-accent hover:text-wurm-accent'
+                                ? 'border-wurm-accent text-wurm-accent bg-wurm-accent/10'
+                                : 'border-wurm-border text-wurm-muted hover:border-wurm-accent hover:text-wurm-accent'
                                 }`}
                         >
                             {cat}
@@ -66,10 +74,12 @@ export default function FilterBar({ articles, onFilter }: FilterBarProps) {
                 </div>
             )}
 
-            {/* Tags */}
+            {/* Tag Filter */}
             {allTags.length > 0 && (
-                <div className="flex gap-2 flex-wrap items-center">
-                    <span className="text-[10px] uppercase tracking-widest text-wurm-muted font-mono">Tags:</span>
+                <div className="flex flex-wrap gap-2">
+                    <span className="text-xs text-wurm-muted uppercase tracking-wider font-mono">
+                        {t('Tags:', 'Tags:')}
+                    </span>
                     {allTags.map(tag => (
                         <button
                             key={tag}
@@ -81,8 +91,8 @@ export default function FilterBar({ articles, onFilter }: FilterBarProps) {
                                 );
                             }}
                             className={`px-3 py-1 text-[10px] uppercase tracking-wider border transition-colors ${selectedTags.includes(tag)
-                                    ? 'border-wurm-accent text-wurm-accent bg-wurm-accent/10'
-                                    : 'border-wurm-border text-wurm-muted hover:border-wurm-accent hover:text-wurm-accent'
+                                ? 'border-wurm-accent text-wurm-accent bg-wurm-accent/10'
+                                : 'border-wurm-border text-wurm-muted hover:border-wurm-accent hover:text-wurm-accent'
                                 }`}
                         >
                             {tag}
@@ -92,15 +102,13 @@ export default function FilterBar({ articles, onFilter }: FilterBarProps) {
             )}
 
             {/* Clear Filters */}
-            {hasActiveFilters && (
+            {(selectedCategory || selectedTags.length > 0) && (
                 <button
-                    onClick={() => {
-                        setSelectedCategory(null);
-                        setSelectedTags([]);
-                    }}
-                    className="text-[10px] uppercase tracking-wider text-wurm-accent hover:underline font-mono"
+                    onClick={clearFilters}
+                    className="flex items-center gap-1 px-3 py-1 text-xs text-wurm-muted hover:text-wurm-accent transition-colors font-mono uppercase tracking-wider"
                 >
-                    Clear all filters
+                    <X size={12} />
+                    {t('Clear all', 'Limpar tudo')}
                 </button>
             )}
         </div>

@@ -5,6 +5,7 @@ import type { Document } from '../content';
 interface SearchBarProps {
     articles: Document[];
     onFilter: (filtered: Document[]) => void;
+    placeholder?: string;
 }
 
 // Custom debounce hook
@@ -24,7 +25,7 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-export default function SearchBar({ articles, onFilter }: SearchBarProps) {
+export default function SearchBar({ articles, onFilter, placeholder = 'Search articles...' }: SearchBarProps) {
     const [query, setQuery] = useState('');
     const debouncedQuery = useDebounce(query, 300); // 300ms debounce
 
@@ -57,7 +58,7 @@ export default function SearchBar({ articles, onFilter }: SearchBarProps) {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search articles..."
+                placeholder={placeholder}
                 className="w-full pl-10 pr-12 py-3 border border-wurm-border bg-wurm-panel text-wurm-text placeholder-wurm-muted outline-none focus:border-wurm-accent transition-colors font-mono text-sm"
             />
             {query && (
