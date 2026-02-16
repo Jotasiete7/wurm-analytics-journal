@@ -16,12 +16,18 @@ const Editor = () => {
     const [tagsInput, setTagsInput] = useState(''); // Comma separated
     const [originalSlug, setOriginalSlug] = useState('');
 
-    // Content State (Monolingual as per Schema)
-    const [title, setTitle] = useState('');
-    const [excerpt, setExcerpt] = useState('');
-    const [content, setContent] = useState('');
-    const [status, setStatus] = useState<any>('draft');
+    // Bilingual Content State
+    const [lang, setLang] = useState<'en' | 'pt'>('en');
 
+    const [titleEn, setTitleEn] = useState('');
+    const [excerptEn, setExcerptEn] = useState('');
+    const [contentEn, setContentEn] = useState('');
+
+    const [titlePt, setTitlePt] = useState('');
+    const [excerptPt, setExcerptPt] = useState('');
+    const [contentPt, setContentPt] = useState('');
+
+    const [status, setStatus] = useState<any>('draft');
     const [uiStatus, setUiStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle');
 
     // Redirect if not authorized
@@ -47,12 +53,17 @@ const Editor = () => {
                     setSlug(doc.slug);
                     setOriginalSlug(doc.slug);
                     setCategory(doc.category);
-                    setTitle(doc.title); // Fixed: matched DB schema
-                    setExcerpt(doc.excerpt);
-                    setContent(doc.content);
+
+                    // Load Bilingual Fields
+                    setTitleEn(doc.title_en);
+                    setExcerptEn(doc.excerpt_en);
+                    setContentEn(doc.content_en);
+
+                    setTitlePt(doc.title_pt || '');
+                    setExcerptPt(doc.excerpt_pt || '');
+                    setContentPt(doc.content_pt || '');
 
                     // We need to fetch raw data for tags/status if not in Document interface
-                    // Or update Document interface. For now, let's fetch raw to get tags.
                     const { data } = await supabase.from('articles').select('tags, status').eq('slug', routeSlug).single();
                     if (data) {
                         setTagsInput((data.tags || []).join(', '));
@@ -76,8 +87,11 @@ const Editor = () => {
     };
 
     const handleSave = async () => {
-        if (!slug || !title || !content) {
-            alert('Please fill in Slug, Title, and Content.');
+        // Validation: At least English title/content required? Or just one?
+        // Let's require EN as primary, PT optional.
+        if (!slug || !titleEn || !contentEn) {
+            alert('Please fill in Slug, English Title, and English Content at minimum.');
+            setLang('en');
             return;
         }
 
@@ -91,15 +105,22 @@ const Editor = () => {
             }
 
             const tagsArray = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
-            const readingTime = calculateReadingTime(content);
+            const readingTime = calculateReadingTime(contentEn); // Base reading time on EN
 
             const payload: any = {
                 slug: slug.toLowerCase().replace(/\s+/g, '-'),
-                title,
+
+                // Save Bilingual Fields
+                title_en: titleEn,
+                excerpt_en: excerptEn,
+                content_en: contentEn,
+
+                title_pt: titlePt || null,
+                excerpt_pt: excerptPt || null,
+                content_pt: contentPt || null,
+
                 category,
                 tags: tagsArray,
-                excerpt,
-                content,
                 status,
                 reading_time: readingTime,
                 author_id: user?.id,
@@ -138,14 +159,6 @@ const Editor = () => {
                     <Loader2 className="animate-spin mr-2" />
                     <span>Initializing Editor...</span>
                 </div>
-                <div className="p-4 border border-[var(--color-border)] bg-[#111] opacity-50 text-[10px] text-left">
-                    <p>DEBUG STATUS:</p>
-                    <p>Auth Loading: {loading ? 'YES' : 'NO'}</p>
-                    <p>UI Status: {uiStatus}</p>
-                    <p>User: {user ? user.email : 'NULL'}</p>
-                    <p>Role: {role || 'NULL'}</p>
-                    <p>Slug: {routeSlug || 'NULL'}</p>
-                </div>
             </div>
         );
     }
@@ -160,10 +173,27 @@ const Editor = () => {
                         <span className="uppercase tracking-wider font-bold">Back</span>
                     </button>
                     <div className="h-4 w-px bg-[var(--color-border)]"></div>
-                    <span className="text-[var(--color-text-heading)] font-bold">
+                    <span className="text-[var(--color-text-heading)] font-bold hidden md:inline">
                         {originalSlug ? 'EDITING MODE' : 'CREATION MODE'}
                     </span>
-                    <span className={`px-2 py-0.5 text-[10px] uppercase border rounded ${uiStatus === 'saved' ? 'border-green-500 text-green-500' : 'border-[var(--color-border)] text-gray-500'}`}>
+
+                    {/* Language Switcher in Toolbar */}
+                    <div className="flex bg-[var(--color-bg-subtle)] rounded border border-[var(--color-border)] p-1 ml-4">
+                        <button
+                            onClick={() => setLang('en')}
+                            className={`px-3 py-1 text-[10px] uppercase font-bold rounded transition-colors ${lang === 'en' ? 'bg-[var(--color-text-heading)] text-[var(--color-bg-body)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-heading)]'}`}
+                        >
+                            English
+                        </button>
+                        <button
+                            onClick={() => setLang('pt')}
+                            className={`px-3 py-1 text-[10px] uppercase font-bold rounded transition-colors ${lang === 'pt' ? 'bg-[var(--color-text-heading)] text-[var(--color-bg-body)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-heading)]'}`}
+                        >
+                            Português
+                        </button>
+                    </div>
+
+                    <span className={`px-2 py-0.5 text-[10px] uppercase border rounded ml-2 ${uiStatus === 'saved' ? 'border-green-500 text-green-500' : 'border-[var(--color-border)] text-gray-500'}`}>
                         {uiStatus}
                     </span>
                 </div>
@@ -172,6 +202,7 @@ const Editor = () => {
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
                         className="bg-transparent border border-[var(--color-border)] text-xs uppercase px-2 outline-none focus:border-[var(--color-accent)]"
+                        title="Status"
                     >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
@@ -191,7 +222,7 @@ const Editor = () => {
 
             <div className="pt-24 pb-32 px-6 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
 
-                {/* Meta Panel */}
+                {/* Meta Panel (Shared) */}
                 <div className="md:col-span-4 space-y-6">
                     <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">Slug / URL</label>
@@ -209,6 +240,7 @@ const Editor = () => {
                             value={category}
                             onChange={e => setCategory(e.target.value)}
                             className="w-full bg-[var(--color-bg-subtle)] border border-[var(--color-border)] p-2 text-xs outline-none focus:border-[var(--color-accent)]"
+                            title="Category"
                         >
                             <option>ANALYSIS</option>
                             <option>STATISTICS</option>
@@ -218,7 +250,7 @@ const Editor = () => {
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">Tags (comma separated)</label>
+                        <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">Tags</label>
                         <input
                             value={tagsInput}
                             onChange={e => setTagsInput(e.target.value)}
@@ -228,33 +260,37 @@ const Editor = () => {
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">Excerpt</label>
+                        <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)] flex justify-between">
+                            <span>Excerpt ({lang.toUpperCase()})</span>
+                        </label>
                         <textarea
-                            value={excerpt}
-                            onChange={e => setExcerpt(e.target.value)}
+                            value={lang === 'en' ? excerptEn : excerptPt}
+                            onChange={e => lang === 'en' ? setExcerptEn(e.target.value) : setExcerptPt(e.target.value)}
                             className="w-full bg-[var(--color-bg-subtle)] border border-[var(--color-border)] p-3 text-xs outline-none focus:border-[var(--color-accent)] h-32 resize-none"
-                            placeholder="Short description for cards..."
+                            placeholder={lang === 'en' ? "Short description..." : "Breve descrição..."}
                         />
                     </div>
                 </div>
 
-                {/* Main Content Panel */}
+                {/* Main Content Panel (Localized) */}
                 <div className="md:col-span-8 space-y-8">
                     <div className="space-y-2">
                         <input
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
-                            placeholder="Article Title"
+                            value={lang === 'en' ? titleEn : titlePt}
+                            onChange={e => lang === 'en' ? setTitleEn(e.target.value) : setTitlePt(e.target.value)}
+                            placeholder={lang === 'en' ? "Article Title" : "Título do Artigo"}
                             className="w-full bg-transparent text-3xl md:text-4xl font-serif font-bold text-[var(--color-text-heading)] placeholder-opacity-20 placeholder-[var(--color-text-muted)] outline-none"
                         />
                     </div>
 
                     <div className="relative">
-                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2">Markdown</div>
+                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2">
+                            Markdown ({lang.toUpperCase()})
+                        </div>
                         <textarea
-                            value={content}
-                            onChange={e => setContent(e.target.value)}
-                            placeholder="# Write your analysis here..."
+                            value={lang === 'en' ? contentEn : contentPt}
+                            onChange={e => lang === 'en' ? setContentEn(e.target.value) : setContentPt(e.target.value)}
+                            placeholder={lang === 'en' ? "# Write your analysis here..." : "# Escreva sua análise aqui..."}
                             className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed text-[var(--color-text-body)] resize-y border border-[var(--color-border)] focus:border-[var(--color-accent)] transition-colors"
                         />
                     </div>

@@ -10,45 +10,57 @@ export interface Document {
     readingTime: string; // e.g. "5 min read"
     author_id?: string;
 
-    // Single Language Content (Unified)
+    // Bilingual Content
+    title_en: string;
+    title_pt?: string;
+
+    excerpt_en: string;
+    excerpt_pt?: string;
+
+    content_en: string;
+    content_pt?: string;
+
+    // Computed/Fallback helpers (for backward compatibility or unified display)
     title: string;
     excerpt: string;
     content: string;
 }
 
-// Helper to get current language content
-// ADAPTER: Returns the same content for both languages as we migrated to single-language storage
-export const getLocalizedContent = (doc: Document, _lang: 'en' | 'pt') => ({
-    title: doc.title,
-    excerpt: doc.excerpt,
-    content: doc.content,
-});
+// Helper to get content based on user locale (simple fallback for now)
+export const getLocalizedContent = (doc: Document, lang: 'en' | 'pt' = 'pt') => {
+    if (lang === 'pt' && doc.title_pt) {
+        return {
+            title: doc.title_pt,
+            excerpt: doc.excerpt_pt || doc.excerpt_en,
+            content: doc.content_pt || doc.content_en
+        };
+    }
+
+    return {
+        title: doc.title_en,
+        excerpt: doc.excerpt_en,
+        content: doc.content_en
+    };
+};
 
 // Initial Mock Content
 export const documents: Document[] = [
     {
         id: '1',
-        slug: 'crushing-mechanics-deep-dive',
+        slug: 'market-analysis-2024',
         category: 'ANALYSIS',
-        date: '2026-02-01',
-        votes: 12,
-        views: 345,
-        readingTime: '4 min read',
+        date: '2024-03-10',
+        votes: 42,
+        views: 1205,
+        readingTime: '8 min read',
 
-        title: 'Tool Quality Does Not Affect Crushing Yield',
-        excerpt: 'Tests across QL 10–90 show no statistically relevant variance in ore output. Focus on skill gain, not tool improvement.',
-        content: `
-# Research Question
-Does the quality of the crude stone tool affect the ore yield when crushing piles, or is purely skill-dependent?
+        title_en: 'Wurm Online Market Analysis 2024',
+        excerpt_en: 'A deep dive into the cross-server economy changes.',
+        content_en: '# Market Analysis 2024\nThis is a comprehensive analysis of the market trends...',
 
-# Methodology
-- **Sample Size**: 1,000 actions.
-- **Tools**: QL 10, QL 50, QL 90 Crude Stone Tools.
-- **Skill Level**: Fixed at 50 Stone Cutting.
-
-# Conclusion
-Tool quality has **no measurable impact**.
-`
+        title: 'Wurm Online Market Analysis 2024',
+        excerpt: 'A deep dive into the cross-server economy changes.',
+        content: '# Market Analysis 2024\nThis is a comprehensive analysis of the market trends...',
     },
     {
         id: '2',
@@ -59,15 +71,13 @@ Tool quality has **no measurable impact**.
         views: 1202,
         readingTime: '7 min read',
 
-        title: 'Lockpicking Success: The QL 50 Threshold',
-        excerpt: 'Preliminary results show a linear progression in difficulty up to QL 50, after which the curve becomes exponential.',
-        content: `
-# Research Question
-Determine the success rate curve for lockpicking relative to Lock Quality vs. Lockpicking Skill.
+        title_en: 'Lockpicking Success: The QL 50 Threshold',
+        excerpt_en: 'Preliminary results show a linear progression up to QL 50.',
+        content_en: '# Research Question\nDoes lock quality affect success chance linearly?\n\n# Conclusion\nYes, up to QL 50.',
 
-# Analysis
-Preliminary results show a linear progression.
-`
+        title: 'Lockpicking Success: The QL 50 Threshold',
+        excerpt: 'Preliminary results show a linear progression up to QL 50.',
+        content: '# Research Question\nDoes lock quality affect success chance linearly?\n\n# Conclusion\nYes, up to QL 50.',
     }
 ];
 

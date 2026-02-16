@@ -5,9 +5,21 @@ import type { Document, Category } from '../content';
 interface DbArticle {
     id: string;
     slug: string;
-    title: string;
-    excerpt: string;
-    content: string;
+
+    // Bilingual Columns
+    title_en: string;
+    excerpt_en: string;
+    content_en: string;
+
+    title_pt?: string;
+    excerpt_pt?: string;
+    content_pt?: string;
+
+    // Legacy/Migration support (optional, can be removed if strictly migrated)
+    title?: string;
+    excerpt?: string;
+    content?: string;
+
     category: Category;
     tags: string[];
     author_id: string;
@@ -60,6 +72,11 @@ export const articleService = {
 
     // Map DB structure to our frontend Document interface
     mapToDocument(dbArticle: DbArticle): Document {
+        // Fallback logic: If _en columns are missing, check if legacy columns exist (during migration)
+        const t_en = dbArticle.title_en || dbArticle.title || 'Untitled';
+        const e_en = dbArticle.excerpt_en || dbArticle.excerpt || '';
+        const c_en = dbArticle.content_en || dbArticle.content || '';
+
         return {
             id: dbArticle.id,
             slug: dbArticle.slug,
@@ -67,12 +84,22 @@ export const articleService = {
             date: dbArticle.published_at
                 ? new Date(dbArticle.published_at).toISOString().split('T')[0]
                 : new Date(dbArticle.created_at).toISOString().split('T')[0],
-            votes: 0, // Likes count to be fetched separately or joined
+            votes: 0,
             views: dbArticle.views,
             readingTime: dbArticle.reading_time || '5 min read',
-            title: dbArticle.title,
-            excerpt: dbArticle.excerpt || '',
-            content: dbArticle.content,
+
+            // Map Fields
+            title_en: t_en,
+            title_pt: dbArticle.title_pt,
+            excerpt_en: e_en,
+            excerpt_pt: dbArticle.excerpt_pt,
+            content_en: c_en,
+            content_pt: dbArticle.content_pt,
+
+            // Computed Defaults (Default to PT if available for this specific user base, or EN)
+            title: dbArticle.title_pt || t_en,
+            excerpt: dbArticle.excerpt_pt || e_en,
+            content: dbArticle.content_pt || c_en,
         };
     },
 
