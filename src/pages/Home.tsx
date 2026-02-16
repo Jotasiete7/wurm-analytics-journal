@@ -3,7 +3,7 @@ import { getLocalizedContent, type Document } from '../content';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useEffect, useState } from 'react';
 import { articleService } from '../services/articles';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import SkeletonArticleCard from '../components/SkeletonArticleCard';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
@@ -105,14 +105,22 @@ const Home = () => {
                     </div>
 
                     <div className="space-y-12">
-                        {/* No articles message */}
+                        {/* No articles message - Improved */}
                         {filteredDocs.length === 0 && (
-                            <div className="text-center py-16">
-                                <p className="text-wurm-muted">No articles found matching your criteria.</p>
+                            <div className="text-center py-16 space-y-4 animate-in fade-in duration-500">
+                                <div className="text-wurm-border/50 flex justify-center">
+                                    <Search size={48} />
+                                </div>
+                                <div>
+                                    <p className="text-lg text-wurm-text font-serif mb-2">No articles found</p>
+                                    <p className="text-sm text-wurm-muted">
+                                        Try adjusting your search or filters
+                                    </p>
+                                </div>
                             </div>
                         )}
 
-                        {/* Other articles */}
+                        {/* Other articles - with fade animation */}
                         {recentDocs.map((doc: Document) => {
                             const { title, excerpt } = getLocalizedContent(doc, lang);
                             return (

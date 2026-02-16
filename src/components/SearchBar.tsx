@@ -1,5 +1,5 @@
 import { Search, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Document } from '../content';
 
 interface SearchBarProps {
@@ -7,13 +7,29 @@ interface SearchBarProps {
     onFilter: (filtered: Document[]) => void;
 }
 
+// Custom debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
 export default function SearchBar({ articles, onFilter }: SearchBarProps) {
     const [query, setQuery] = useState('');
+    const debouncedQuery = useDebounce(query, 300); // 300ms debounce
 
-    const handleSearch = (value: string) => {
-        setQuery(value);
-
-        if (!value.trim()) {
+    useEffect(() => {
+        if (!debouncedQuery.trim()) {
             onFilter(articles);
             return;
         }
@@ -28,11 +44,11 @@ export default function SearchBar({ articles, onFilter }: SearchBarProps) {
                 ${article.content_pt || ''}
             `.toLowerCase();
 
-            return searchText.includes(value.toLowerCase());
+            return searchText.includes(debouncedQuery.toLowerCase());
         });
 
         onFilter(filtered);
-    };
+    }, [debouncedQuery, articles, onFilter]);
 
     return (
         <div className="relative mb-8">
@@ -40,13 +56,13 @@ export default function SearchBar({ articles, onFilter }: SearchBarProps) {
             <input
                 type="text"
                 value={query}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search articles..."
                 className="w-full pl-10 pr-12 py-3 border border-wurm-border bg-wurm-panel text-wurm-text placeholder-wurm-muted outline-none focus:border-wurm-accent transition-colors font-mono text-sm"
             />
             {query && (
                 <button
-                    onClick={() => handleSearch('')}
+                    onClick={() => setQuery('')}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-wurm-muted hover:text-wurm-accent transition-colors"
                     title="Clear search"
                 >

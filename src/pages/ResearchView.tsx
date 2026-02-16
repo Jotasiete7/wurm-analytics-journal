@@ -11,6 +11,7 @@ import ShareButtons from '../components/ShareButtons';
 import StructuredData from '../components/StructuredData';
 import ReadingProgress from '../components/ReadingProgress';
 import RelatedArticles from '../components/RelatedArticles';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { ArrowLeft } from 'lucide-react';
 
 const ResearchView = () => {
@@ -64,6 +65,11 @@ const ResearchView = () => {
             }} />
 
             <article className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Breadcrumbs */}
+                <Breadcrumbs items={[
+                    { label: doc.category, href: '/' },
+                    { label: title }
+                ]} />
                 {/* Back Link - Minimal */}
                 <div className="mb-12">
                     <NavLink to="/" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-wurm-muted hover:text-wurm-accent transition-colors">
