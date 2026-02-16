@@ -1,11 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import Layout from './layouts/Layout';
 import Home from './pages/Home';
 import ResearchView from './pages/ResearchView';
 import Methodology from './pages/Methodology';
-import Login from './pages/Admin/Login';
-import Editor from './pages/Admin/Editor';
-import Dashboard from './pages/Admin/Dashboard';
+import Spinner from './components/Spinner';
+
+// Lazy load admin routes for better performance
+const Login = lazy(() => import('./pages/Admin/Login'));
+const Editor = lazy(() => import('./pages/Admin/Editor'));
+const Dashboard = lazy(() => import('./pages/Admin/Dashboard'));
+
 import './index.css';
 
 function App() {
@@ -19,11 +24,27 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
 
-        {/* Admin Routes (Standalone) */}
-        <Route path="/admin" element={<Login />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/editor" element={<Editor />} />
-        <Route path="/admin/editor/:slug" element={<Editor />} />
+        {/* Admin Routes (Lazy Loaded) */}
+        <Route path="/admin" element={
+          <Suspense fallback={<Spinner />}>
+            <Login />
+          </Suspense>
+        } />
+        <Route path="/admin/dashboard" element={
+          <Suspense fallback={<Spinner />}>
+            <Dashboard />
+          </Suspense>
+        } />
+        <Route path="/admin/editor" element={
+          <Suspense fallback={<Spinner />}>
+            <Editor />
+          </Suspense>
+        } />
+        <Route path="/admin/editor/:slug" element={
+          <Suspense fallback={<Spinner />}>
+            <Editor />
+          </Suspense>
+        } />
       </Routes>
     </Router>
   );

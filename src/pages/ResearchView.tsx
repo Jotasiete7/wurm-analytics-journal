@@ -7,6 +7,8 @@ import { articleService } from '../services/articles';
 import VoteControl from '../components/VoteControl';
 import Spinner from '../components/Spinner';
 import SEO from '../components/SEO';
+import ShareButtons from '../components/ShareButtons';
+import StructuredData from '../components/StructuredData';
 import { ArrowLeft } from 'lucide-react';
 
 const ResearchView = () => {
@@ -43,6 +45,13 @@ const ResearchView = () => {
                 description={excerpt}
                 type="article"
             />
+            <StructuredData article={{
+                title,
+                excerpt,
+                date: doc.date,
+                slug: doc.slug,
+                category: doc.category
+            }} />
 
             <article className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Back Link - Minimal */}
@@ -76,9 +85,15 @@ const ResearchView = () => {
                         {title}
                     </h1>
 
-                    <div className="text-lg md:text-2xl text-wurm-muted font-light leading-relaxed border-l-2 border-wurm-accent/30 pl-4 md:pl-6 py-1">
+                    <div className="text-lg md:text-2xl text-wurm-muted font-light leading-relaxed border-l-2 border-wurm-accent/30 pl-4 md:pl-6 py-1 mb-8">
                         {excerpt}
                     </div>
+
+                    {/* Share Buttons */}
+                    <ShareButtons
+                        title={title}
+                        url={typeof window !== 'undefined' ? window.location.href : ''}
+                    />
                 </header>
 
                 {/* Content - Typographic Focus */}

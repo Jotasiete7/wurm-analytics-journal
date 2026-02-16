@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useEffect, useState } from 'react';
 import { articleService } from '../services/articles';
 import { ArrowRight } from 'lucide-react';
+import SkeletonArticleCard from '../components/SkeletonArticleCard';
 
 const Home = () => {
     const { lang } = useLanguage();
@@ -19,7 +20,20 @@ const Home = () => {
         fetchDocs();
     }, []);
 
-    if (loading) return null;
+    // Show skeleton screens while loading
+    if (loading) {
+        return (
+            <div className="max-w-[var(--spacing-measure-wide)] mx-auto animate-in fade-in duration-700">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-24 pt-16">
+                    <div className="md:col-span-8 space-y-12">
+                        <SkeletonArticleCard />
+                        <SkeletonArticleCard />
+                        <SkeletonArticleCard />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const featuredDoc = docs[0];
     const recentDocs = docs.slice(1);
