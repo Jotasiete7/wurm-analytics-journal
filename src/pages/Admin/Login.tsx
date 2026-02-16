@@ -17,7 +17,20 @@ const Login = () => {
         setError('');
         setLogs([]);
         addLog('Starting login process...');
-        addLog(`Env Check: URL=${!!import.meta.env.VITE_SUPABASE_URL}, Key=${!!(import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY.length > 20)}`);
+        const sbUrl = import.meta.env.VITE_SUPABASE_URL;
+        addLog(`Env Check: URL=${!!sbUrl}, Key=${!!(import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY.length > 20)}`);
+
+        // DIAGNOSTIC 1: Direct Fetch
+        try {
+            addLog(`Ping: ${sbUrl}/auth/v1/health`);
+            const start = Date.now();
+            const res = await fetch(`${sbUrl}/auth/v1/health`, { method: 'GET' });
+            const end = Date.now();
+            addLog(`Ping Result: Status ${res.status} (${end - start}ms)`);
+            if (!res.ok) addLog(`Ping Text: ${await res.text()}`);
+        } catch (pingErr: any) {
+            addLog(`Ping FAILED: ${pingErr.message}`);
+        }
 
         try {
             addLog(`Attempting sign in for ${email}...`);
