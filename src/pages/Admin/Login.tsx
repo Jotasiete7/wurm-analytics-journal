@@ -7,7 +7,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [logs, setLogs] = useState<string[]>([]);
-    const { signIn } = useAuth();
+    const { signIn, signInWithToken } = useAuth();
     const navigate = useNavigate();
 
     const addLog = (msg: string) => setLogs(prev => [...prev, `${new Date().toISOString().split('T')[1].split('.')[0]} - ${msg}`]);
@@ -15,70 +15,72 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setLogs([]);
-        addLog('Starting login process...');
-        const sbUrl = import.meta.env.VITE_SUPABASE_URL;
-        addLog(`Env Check: URL=${!!sbUrl}, Key=${!!(import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY.length > 20)}`);
-
-        // DIAGNOSTIC 1: Direct Fetch
-        try {
-            addLog(`Ping: ${sbUrl}/auth/v1/health`);
-            const start = Date.now();
-            const res = await fetch(`${sbUrl}/auth/v1/health`, { method: 'GET' });
-            const end = Date.now();
-            addLog(`Ping Result: Status ${res.status} (${end - start}ms)`);
-            if (!res.ok) addLog(`Ping Text: ${await res.text()}`);
-        } catch (pingErr: any) {
-            addLog(`Ping FAILED: ${pingErr.message}`);
-        }
-
-        // DIAGNOSTIC 2: Raw REST Login (Bypass SDK)
-        try {
-            addLog('Attempting RAW REST login...');
-            const rawRes = await fetch(`${sbUrl}/auth/v1/token?grant_type=password`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-                },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (rawRes.ok) {
-                addLog('RAW REST Login: SUCCESS (200 OK)');
-                const data = await rawRes.json();
-                addLog(`Got Token: ${data.access_token.substring(0, 10)}...`);
-            } else {
-                addLog(`RAW REST Login: FAILED (${rawRes.status})`);
-                addLog(await rawRes.text());
-            }
-        } catch (rawErr: any) {
-            addLog(`RAW REST Exception: ${rawErr.message}`);
-        }
+        setLogs([]); // Keep logs for now as they are useful for the user
+        addLog('Starting robust login process...');
 
         try {
-            addLog(`Attempting SDK sign in for ${email}...`);
+            // STRATEGY: Try SDK first. If it times out/fails, use Raw REST as fallback.
+            // Actually, given the user history, let's try Raw REST *immediately* if we suspect SDK issues,
+            // or just use Raw REST as the primary mechanism if SDK is known to timeout.
 
-            // Race against a timeout
-            const timeoutPromise = new Promise<{ error: string }>((_, reject) =>
-                setTimeout(() => reject(new Error('Request timed out - Network or Supabase unreachable')), 10000)
+            // Let's try SDK with a short timeout, then fallback.
+            addLog('Attempting SDK login...');
+
+            const timeoutPromise = new Promise<{ error: string, timeout: boolean }>((resolve) =>
+                setTimeout(() => resolve({ error: 'SDK_TIMEOUT', timeout: true }), 5000)
             );
 
-            const { error } = await Promise.race([
+            const sdkResult = await Promise.race([
                 signIn(email, password),
                 timeoutPromise
             ]);
 
-            if (error) {
-                addLog(`Error returned: ${error}`);
-                setError(error);
-            } else {
-                addLog('Sign in successful. Navigating...');
+            // @ts-ignore
+            if (!sdkResult.timeout && !sdkResult.error) {
+                addLog('SDK Login Successful.');
                 navigate('/admin/dashboard');
+                return;
             }
+
+            if ((sdkResult as any).timeout) {
+                addLog('SDK Timed out. Switching to Fallback (Raw REST)...');
+            } else {
+                addLog(`SDK Failed: ${(sdkResult as any).error}. Switching to Fallback...`);
+            }
+
+            // FALLBACK: Raw REST
+            const sbUrl = import.meta.env.VITE_SUPABASE_URL;
+            const sbKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+            const res = await fetch(`${sbUrl}/auth/v1/token?grant_type=password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': sbKey
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                addLog('Fallback Raw Login Successful. Setting session...');
+                const { error: sessionError } = await signInWithToken(data.access_token, data.refresh_token);
+
+                if (sessionError) {
+                    throw new Error(`Session set error: ${sessionError}`);
+                }
+
+                addLog('Session active. Redirecting...');
+                navigate('/admin/dashboard');
+            } else {
+                const errText = await res.text();
+                throw new Error(`Fallback failed: ${res.status} - ${errText}`);
+            }
+
         } catch (err: any) {
-            addLog(`CRITICAL ERROR: ${err.message}`);
+            console.error(err);
             setError(err.message);
+            addLog(`ERROR: ${err.message}`);
         }
     };
 

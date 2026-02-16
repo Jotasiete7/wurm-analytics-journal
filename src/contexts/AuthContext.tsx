@@ -10,6 +10,7 @@ interface AuthContextType {
     role: UserRole | null;
     loading: boolean;
     signIn: (email: string, password: string) => Promise<{ error?: string }>;
+    signInWithToken: (accessToken: string, refreshToken: string) => Promise<{ error?: string }>;
     signOut: () => Promise<void>;
 }
 
@@ -88,13 +89,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const signInWithToken = async (accessToken: string, refreshToken: string) => {
+        try {
+            const { error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+            });
+            return { error: error?.message };
+        } catch (e: any) {
+            return { error: e.message };
+        }
+    };
+
     const signOut = async () => {
         await supabase.auth.signOut();
         setRole(null);
     };
 
     return (
-        <AuthContext.Provider value={{ session, user, role, loading, signIn, signOut }}>
+        <AuthContext.Provider value={{ session, user, role, loading, signIn, signInWithToken, signOut }}>
             {children}
         </AuthContext.Provider>
     );
