@@ -47,9 +47,9 @@ const Editor = () => {
                     setSlug(doc.slug);
                     setOriginalSlug(doc.slug);
                     setCategory(doc.category);
-                    setTitle(doc.title_en); // Mapped from DB title
-                    setExcerpt(doc.excerpt_en);
-                    setContent(doc.content_en);
+                    setTitle(doc.title); // Fixed: matched DB schema
+                    setExcerpt(doc.excerpt);
+                    setContent(doc.content);
 
                     // We need to fetch raw data for tags/status if not in Document interface
                     // Or update Document interface. For now, let's fetch raw to get tags.

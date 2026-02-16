@@ -70,12 +70,9 @@ export const articleService = {
             votes: 0, // Likes count to be fetched separately or joined
             views: dbArticle.views,
             readingTime: dbArticle.reading_time || '5 min read',
-            title_en: dbArticle.title,
-            title_pt: dbArticle.title,
-            excerpt_en: dbArticle.excerpt || '',
-            excerpt_pt: dbArticle.excerpt || '',
-            content_en: dbArticle.content,
-            content_pt: dbArticle.content,
+            title: dbArticle.title,
+            excerpt: dbArticle.excerpt || '',
+            content: dbArticle.content,
         };
     },
 

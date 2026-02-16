@@ -11,12 +11,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(
     supabaseUrl || '',
-    supabaseAnonKey || '',
-    {
-        auth: {
-            persistSession: false, // DEBUG: Disable to rule out LocalStorage issues
-            autoRefreshToken: false,
-            detectSessionInUrl: false
-        }
-    }
+    supabaseAnonKey || ''
 );

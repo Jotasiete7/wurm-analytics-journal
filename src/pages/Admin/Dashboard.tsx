@@ -13,10 +13,6 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchArticles();
-    }, []);
-
     const fetchArticles = async () => {
         setLoading(true);
         const data = await articleService.getAll();
@@ -25,6 +21,10 @@ const Dashboard = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        fetchArticles();
+    }, []);
 
     const handleLogout = async () => {
         await signOut();
@@ -96,8 +96,8 @@ const Dashboard = () => {
                             articles.map(article => (
                                 <div key={article.id} className="grid grid-cols-12 gap-4 p-4 border-b border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)] transition-colors items-center group">
                                     <div className="col-span-4">
-                                        <div className="font-bold text-[var(--color-text-heading)] truncate" title={article.title_en}>
-                                            {article.title_en}
+                                        <div className="font-bold text-[var(--color-text-heading)] truncate" title={article.title}>
+                                            {article.title}
                                         </div>
                                         <div className="text-xs text-[var(--color-text-meta)] truncate font-mono opacity-60">
                                             /{article.slug}
