@@ -64,6 +64,10 @@ const Dashboard = () => {
                         <Eye size={14} />
                         <span>Home</span>
                     </NavLink>
+                    <NavLink to="/admin/analytics" className="flex items-center gap-2 hover:text-[var(--color-accent)] uppercase tracking-wider">
+                        <Eye size={14} />
+                        <span>Analytics</span>
+                    </NavLink>
                     <NavLink to="/admin/editor" className="flex items-center gap-2 hover:text-[var(--color-accent)] uppercase tracking-wider">
                         <Plus size={14} />
                         <span>New Record</span>
