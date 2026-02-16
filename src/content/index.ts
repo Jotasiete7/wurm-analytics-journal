@@ -9,6 +9,8 @@ export interface Document {
     views: number;
     readingTime: string; // e.g. "5 min read"
     author_id?: string;
+    status?: 'draft' | 'published'; // For filtering published articles
+    tags?: string[]; // For filtering and related articles
 
     // Bilingual Content
     title_en: string;

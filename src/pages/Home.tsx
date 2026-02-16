@@ -5,16 +5,22 @@ import { useEffect, useState } from 'react';
 import { articleService } from '../services/articles';
 import { ArrowRight } from 'lucide-react';
 import SkeletonArticleCard from '../components/SkeletonArticleCard';
+import SearchBar from '../components/SearchBar';
+import FilterBar from '../components/FilterBar';
 
 const Home = () => {
     const { lang } = useLanguage();
-    const [docs, setDocs] = useState<Document[]>([]);
+    const [allDocs, setAllDocs] = useState<Document[]>([]);
+    const [filteredDocs, setFilteredDocs] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDocs = async () => {
             const data = await articleService.getAll();
-            if (data) setDocs(data);
+            if (data) {
+                setAllDocs(data);
+                setFilteredDocs(data);
+            }
             setLoading(false);
         };
         fetchDocs();
@@ -35,11 +41,24 @@ const Home = () => {
         );
     }
 
-    const featuredDoc = docs[0];
-    const recentDocs = docs.slice(1);
+    const featuredDoc = filteredDocs[0];
+    const recentDocs = filteredDocs.slice(1);
 
     return (
         <div className="max-w-[var(--spacing-measure-wide)] mx-auto animate-in fade-in duration-700 relative">
+
+            {/* Search and Filters */}
+            <div className="mb-12 pt-8">
+                <SearchBar articles={allDocs} onFilter={setFilteredDocs} />
+                <FilterBar articles={allDocs} onFilter={setFilteredDocs} />
+
+                {/* Results count */}
+                {filteredDocs.length !== allDocs.length && (
+                    <p className="text-xs uppercase tracking-widest text-wurm-muted font-mono mb-4">
+                        {filteredDocs.length} {filteredDocs.length === 1 ? 'article' : 'articles'} found
+                    </p>
+                )}
+            </div>
 
             {/* HERO SECTION - Featured Article */}
             {featuredDoc && (
@@ -86,38 +105,42 @@ const Home = () => {
                     </div>
 
                     <div className="space-y-12">
-                        {recentDocs.length > 0 ? (
-                            recentDocs.map((doc) => {
-                                const { title, excerpt } = getLocalizedContent(doc, lang);
-                                return (
-                                    <article key={doc.id} className="group flex flex-col items-start">
-                                        <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-wurm-muted mb-3">
-                                            <span className="text-wurm-accent">{doc.category}</span>
-                                            <span>•</span>
-                                            <span>{doc.date}</span>
-                                            <span>•</span>
-                                            <span>{doc.readingTime}</span>
-                                        </div>
-
-                                        <h3 className="text-2xl font-serif font-bold text-wurm-text mb-3 leading-tight group-hover:text-wurm-accent transition-colors">
-                                            <NavLink to={`/research/${doc.slug}`}>
-                                                {title}
-                                            </NavLink>
-                                        </h3>
-
-                                        <p className="text-wurm-muted mb-4 leading-relaxed line-clamp-2 max-w-xl">
-                                            {excerpt}
-                                        </p>
-
-                                        <NavLink to={`/research/${doc.slug}`} className="text-xs text-wurm-text opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
-                                            Read more <ArrowRight size={10} />
-                                        </NavLink>
-                                    </article>
-                                );
-                            })
-                        ) : (
-                            <div className="text-wurm-muted italic">No other articles found.</div>
+                        {/* No articles message */}
+                        {filteredDocs.length === 0 && (
+                            <div className="text-center py-16">
+                                <p className="text-wurm-muted">No articles found matching your criteria.</p>
+                            </div>
                         )}
+
+                        {/* Other articles */}
+                        {recentDocs.map((doc: Document) => {
+                            const { title, excerpt } = getLocalizedContent(doc, lang);
+                            return (
+                                <article key={doc.id} className="group flex flex-col items-start">
+                                    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-wurm-muted mb-3">
+                                        <span className="text-wurm-accent">{doc.category}</span>
+                                        <span>•</span>
+                                        <span>{doc.date}</span>
+                                        <span>•</span>
+                                        <span>{doc.readingTime}</span>
+                                    </div>
+
+                                    <h3 className="text-2xl font-serif font-bold text-wurm-text mb-3 leading-tight group-hover:text-wurm-accent transition-colors">
+                                        <NavLink to={`/research/${doc.slug}`}>
+                                            {title}
+                                        </NavLink>
+                                    </h3>
+
+                                    <p className="text-wurm-muted mb-4 leading-relaxed line-clamp-2 max-w-xl">
+                                        {excerpt}
+                                    </p>
+
+                                    <NavLink to={`/research/${doc.slug}`} className="text-xs text-wurm-text opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                                        Read more <ArrowRight size={10} />
+                                    </NavLink>
+                                </article>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -133,7 +156,7 @@ const Home = () => {
 
                         <div className="space-y-6">
                             {/* Mock Trending Data - In real app, sort by views */}
-                            {docs.slice(0, 5).map((doc, i) => (
+                            {allDocs.slice(0, 5).map((doc: Document, i: number) => (
                                 <div key={doc.id} className="flex gap-4 items-baseline group">
                                     <span className="text-3xl font-serif font-bold text-wurm-border/50 group-hover:text-wurm-accent/50 transition-colors">0{i + 1}</span>
                                     <div className="flex flex-col">

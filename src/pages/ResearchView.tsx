@@ -9,26 +9,35 @@ import Spinner from '../components/Spinner';
 import SEO from '../components/SEO';
 import ShareButtons from '../components/ShareButtons';
 import StructuredData from '../components/StructuredData';
+import ReadingProgress from '../components/ReadingProgress';
+import RelatedArticles from '../components/RelatedArticles';
 import { ArrowLeft } from 'lucide-react';
 
 const ResearchView = () => {
     const { slug } = useParams();
     const { lang } = useLanguage();
     const [doc, setDoc] = useState<Document | null>(null);
+    const [allArticles, setAllArticles] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDoc = async () => {
+        const fetchData = async () => {
             if (slug) {
-                const data = await articleService.getBySlug(slug);
-                setDoc(data || null);
-                if (data) {
-                    await articleService.incrementView(data.id);
+                const [article, articles] = await Promise.all([
+                    articleService.getBySlug(slug),
+                    articleService.getAll()
+                ]);
+
+                setDoc(article || null);
+                setAllArticles(articles || []);
+
+                if (article) {
+                    await articleService.incrementView(article.id);
                 }
             }
             setLoading(false);
         };
-        fetchDoc();
+        fetchData();
     }, [slug]);
 
     if (loading) return <Spinner />;
@@ -40,6 +49,7 @@ const ResearchView = () => {
 
     return (
         <>
+            <ReadingProgress />
             <SEO
                 title={title}
                 description={excerpt}
@@ -121,6 +131,15 @@ const ResearchView = () => {
                     </div>
                 </div>
             </article>
+
+            {/* Related Articles */}
+            <div className="max-w-3xl mx-auto">
+                <RelatedArticles
+                    currentArticle={doc}
+                    allArticles={allArticles}
+                    limit={3}
+                />
+            </div>
         </>
     );
 };
