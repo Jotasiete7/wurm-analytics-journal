@@ -31,16 +31,28 @@ const Editor = () => {
     const [uiStatus, setUiStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle');
 
     // Redirect if not authorized
+    // Redirect if not authorized
+    const [isAuthorized, setIsAuthorized] = useState(false);
+
     useEffect(() => {
+        // SECURITY LATCH: Once authorized, stay authorized.
+        // This prevents the user from being kicked out if the network blips 
+        // or a background re-fetch momentarily returns a bad state.
+        if (isAuthorized) return;
+
         if (!loading) {
             if (!user) {
                 navigate('/admin');
-            } else if (role !== 'admin' && role !== 'editor') {
-                alert('Unauthorized access');
+            } else if (role === 'admin' || role === 'editor') {
+                setIsAuthorized(true);
+            } else {
+                // Only kick if we are sure they are NOT authorized and LATCH is closed
+                console.warn('Unauthorized access detected. Role:', role);
+                alert('Unauthorized access. Please login again.');
                 navigate('/');
             }
         }
-    }, [user, role, loading, navigate]);
+    }, [user, role, loading, navigate, isAuthorized]);
 
     // Load existing article
     useEffect(() => {

@@ -19,7 +19,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
-    const [role, setRole] = useState<UserRole | null>(null);
+    const [role, setRole] = useState<UserRole | null>(() => {
+        // PERSISTENCE: Try to load role from local storage to avoid "reader" flash
+        const cached = localStorage.getItem('auth_role');
+        return (cached === 'admin' || cached === 'editor' || cached === 'reader') ? cached : null;
+    });
     const [loading, setLoading] = useState(true);
 
     const fetchRole = async (userId: string) => {
@@ -92,15 +96,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 const userRole = await fetchRole(session.user.id);
                 setRole(userRole);
+                localStorage.setItem('auth_role', userRole); // Sync to storage
             } else {
                 setRole(null);
+                localStorage.removeItem('auth_role');
             }
 
             setLoading(false);
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, []); // Removed dependency array based on lint (or keep empty if intended to run once)
 
     const signIn = async (email: string, password: string) => {
         try {
