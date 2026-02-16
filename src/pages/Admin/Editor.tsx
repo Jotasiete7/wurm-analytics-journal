@@ -29,6 +29,8 @@ const Editor = () => {
 
     const [status, setStatus] = useState<any>('draft');
     const [uiStatus, setUiStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle');
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
     // Redirect if not authorized
     useEffect(() => {
@@ -138,6 +140,8 @@ const Editor = () => {
             if (error) throw error;
 
             setUiStatus('saved');
+            setHasUnsavedChanges(false);
+            setLastSaved(new Date());
             setTimeout(() => setUiStatus('idle'), 2000);
 
             // Navigation handling
@@ -151,6 +155,37 @@ const Editor = () => {
             setUiStatus('error');
         }
     };
+
+    // Auto-save every 30 seconds if there are unsaved changes
+    useEffect(() => {
+        if (!hasUnsavedChanges || uiStatus === 'saving') return;
+
+        const autoSaveTimer = setTimeout(() => {
+            console.log('🔄 Auto-saving...');
+            handleSave();
+        }, 30000); // 30 seconds
+
+        return () => clearTimeout(autoSaveTimer);
+    }, [hasUnsavedChanges, titleEn, contentEn, titlePt, contentPt, excerptEn, excerptPt, slug, category, tagsInput, status]);
+
+    // Track changes to mark as unsaved
+    useEffect(() => {
+        if (uiStatus === 'loading') return; // Don't mark as unsaved during initial load
+        setHasUnsavedChanges(true);
+    }, [titleEn, contentEn, titlePt, contentPt, excerptEn, excerptPt, slug, category, tagsInput, status]);
+
+    // Warn before leaving with unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [hasUnsavedChanges]);
 
     if (loading || uiStatus === 'loading') {
         return (
@@ -193,9 +228,26 @@ const Editor = () => {
                         </button>
                     </div>
 
-                    <span className={`px-2 py-0.5 text-[10px] uppercase border rounded ml-2 ${uiStatus === 'saved' ? 'border-green-500 text-green-500' : 'border-[var(--color-border)] text-gray-500'}`}>
-                        {uiStatus}
-                    </span>
+                    <div className="flex items-center gap-3">
+                        {/* Unsaved Changes Indicator */}
+                        {hasUnsavedChanges && uiStatus !== 'saving' && (
+                            <span className="px-2 py-0.5 text-[10px] uppercase border border-yellow-500/50 text-yellow-500 rounded animate-pulse">
+                                Unsaved
+                            </span>
+                        )}
+
+                        {/* Last Saved Time */}
+                        {lastSaved && !hasUnsavedChanges && uiStatus === 'idle' && (
+                            <span className="text-[10px] text-gray-500">
+                                Saved {new Date(lastSaved).toLocaleTimeString()}
+                            </span>
+                        )}
+
+                        {/* Status Badge */}
+                        <span className={`px-2 py-0.5 text-[10px] uppercase border rounded ${uiStatus === 'saved' ? 'border-green-500 text-green-500' : uiStatus === 'saving' ? 'border-blue-500 text-blue-500' : 'border-[var(--color-border)] text-gray-500'}`}>
+                            {uiStatus}
+                        </span>
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     {/* View Live Button - Only show if published */}
@@ -281,6 +333,9 @@ const Editor = () => {
                     <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)] flex justify-between">
                             <span>Excerpt ({lang.toUpperCase()})</span>
+                            <span className="text-gray-500">
+                                {(lang === 'en' ? excerptEn : excerptPt).length} chars
+                            </span>
                         </label>
                         <textarea
                             value={lang === 'en' ? excerptEn : excerptPt}
@@ -294,6 +349,14 @@ const Editor = () => {
                 {/* Main Content Panel (Localized) */}
                 <div className="md:col-span-8 space-y-8">
                     <div className="space-y-2">
+                        <div className="flex justify-between items-center mb-1">
+                            <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">
+                                Title ({lang.toUpperCase()})
+                            </label>
+                            <span className="text-[10px] text-gray-500">
+                                {(lang === 'en' ? titleEn : titlePt).length} chars
+                            </span>
+                        </div>
                         <input
                             value={lang === 'en' ? titleEn : titlePt}
                             onChange={e => lang === 'en' ? setTitleEn(e.target.value) : setTitlePt(e.target.value)}
@@ -303,8 +366,11 @@ const Editor = () => {
                     </div>
 
                     <div className="relative">
-                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2">
-                            Markdown ({lang.toUpperCase()})
+                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2 flex gap-3">
+                            <span>Markdown ({lang.toUpperCase()})</span>
+                            <span className="text-gray-500">
+                                {(lang === 'en' ? contentEn : contentPt).trim().split(/\s+/).filter(w => w.length > 0).length} words
+                            </span>
                         </div>
                         <textarea
                             value={lang === 'en' ? contentEn : contentPt}
