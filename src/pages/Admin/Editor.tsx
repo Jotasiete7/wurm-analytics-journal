@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { articleService } from '../../services/articles';
 import { ChevronLeft, Save, Loader2, Eye, Check } from 'lucide-react';
+import EditorToolbar from '../../components/EditorToolbar';
 
 const Editor = () => {
     const { user, role, loading } = useAuth();
@@ -31,6 +32,10 @@ const Editor = () => {
     const [uiStatus, setUiStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle');
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+    // Refs for textareas (for toolbar)
+    const contentEnRef = useRef<HTMLTextAreaElement>(null);
+    const contentPtRef = useRef<HTMLTextAreaElement>(null);
 
     // Redirect if not authorized
     useEffect(() => {
@@ -86,6 +91,28 @@ const Editor = () => {
         const words = text.trim().split(/\s+/).length;
         const minutes = Math.ceil(words / wordsPerMinute);
         return `${minutes} min read`;
+    };
+
+    // Handle text insertion from toolbar
+    const handleInsert = (text: string) => {
+        const currentRef = lang === 'en' ? contentEnRef : contentPtRef;
+        const currentContent = lang === 'en' ? contentEn : contentPt;
+        const setCurrentContent = lang === 'en' ? setContentEn : setContentPt;
+
+        if (currentRef.current) {
+            const textarea = currentRef.current;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+
+            const newContent = currentContent.substring(0, start) + text + currentContent.substring(end);
+            setCurrentContent(newContent);
+
+            // Set cursor position after inserted text
+            setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + text.length;
+                textarea.focus();
+            }, 0);
+        }
     };
 
     const handleSave = async () => {
@@ -366,13 +393,23 @@ const Editor = () => {
                     </div>
 
                     <div className="relative">
-                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2 flex gap-3">
+                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2 flex gap-3 z-10">
                             <span>Markdown ({lang.toUpperCase()})</span>
                             <span className="text-gray-500">
                                 {(lang === 'en' ? contentEn : contentPt).trim().split(/\s+/).filter(w => w.length > 0).length} words
                             </span>
                         </div>
+
+                        {/* Editor Toolbar */}
+                        <div className="mt-6">
+                            <EditorToolbar
+                                textareaRef={lang === 'en' ? contentEnRef : contentPtRef}
+                                onInsert={handleInsert}
+                            />
+                        </div>
+
                         <textarea
+                            ref={lang === 'en' ? contentEnRef : contentPtRef}
                             value={lang === 'en' ? contentEn : contentPt}
                             onChange={e => lang === 'en' ? setContentEn(e.target.value) : setContentPt(e.target.value)}
                             placeholder={lang === 'en' ? "# Write your analysis here..." : "# Escreva sua análise aqui..."}
