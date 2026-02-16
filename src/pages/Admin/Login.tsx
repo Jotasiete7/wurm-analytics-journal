@@ -32,8 +32,32 @@ const Login = () => {
             addLog(`Ping FAILED: ${pingErr.message}`);
         }
 
+        // DIAGNOSTIC 2: Raw REST Login (Bypass SDK)
         try {
-            addLog(`Attempting sign in for ${email}...`);
+            addLog('Attempting RAW REST login...');
+            const rawRes = await fetch(`${sbUrl}/auth/v1/token?grant_type=password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (rawRes.ok) {
+                addLog('RAW REST Login: SUCCESS (200 OK)');
+                const data = await rawRes.json();
+                addLog(`Got Token: ${data.access_token.substring(0, 10)}...`);
+            } else {
+                addLog(`RAW REST Login: FAILED (${rawRes.status})`);
+                addLog(await rawRes.text());
+            }
+        } catch (rawErr: any) {
+            addLog(`RAW REST Exception: ${rawErr.message}`);
+        }
+
+        try {
+            addLog(`Attempting SDK sign in for ${email}...`);
 
             // Race against a timeout
             const timeoutPromise = new Promise<{ error: string }>((_, reject) =>
