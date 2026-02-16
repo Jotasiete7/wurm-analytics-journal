@@ -6,24 +6,37 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [logs, setLogs] = useState<string[]>([]);
     const { signIn } = useAuth();
     const navigate = useNavigate();
+
+    const addLog = (msg: string) => setLogs(prev => [...prev, `${new Date().toISOString().split('T')[1].split('.')[0]} - ${msg}`]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setLogs([]);
+        addLog('Starting login process...');
 
-        const { error } = await signIn(email, password);
+        try {
+            addLog(`Attempting sign in for ${email}...`);
+            const { error } = await signIn(email, password);
 
-        if (error) {
-            setError(error);
-        } else {
-            navigate('/admin/dashboard');
+            if (error) {
+                addLog(`Error returned: ${error}`);
+                setError(error);
+            } else {
+                addLog('Sign in successful. Navigating...');
+                navigate('/admin/dashboard');
+            }
+        } catch (err: any) {
+            addLog(`CRITICAL ERROR: ${err.message}`);
+            setError(err.message);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-body)]">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-bg-body)]">
             <div className="w-full max-w-sm p-8 border border-[var(--color-border)]">
                 <h1 className="text-xl font-bold text-[var(--color-text-heading)] mb-6 text-center tracking-tight">
                     Editor's Desk
@@ -70,6 +83,16 @@ const Login = () => {
                         Authenticate
                     </button>
                 </form>
+            </div>
+
+            {/* Debug Console */}
+            <div className="mt-8 w-full max-w-sm border border-[var(--color-border)] bg-black p-4 font-mono text-[10px] text-[var(--color-text-meta)] opacity-70">
+                <div className="border-b border-[var(--color-border)] mb-2 pb-1 uppercase tracking-wider">Debug Log</div>
+                <div className="h-24 overflow-y-auto space-y-1">
+                    {logs.length === 0 ? <span className="italic opacity-50">Waiting for interaction...</span> : logs.map((log, i) => (
+                        <div key={i}>{log}</div>
+                    ))}
+                </div>
             </div>
         </div>
     );
