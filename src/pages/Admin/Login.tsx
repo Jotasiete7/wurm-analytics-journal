@@ -64,10 +64,19 @@ const Login = () => {
             if (res.ok) {
                 const data = await res.json();
                 addLog('Fallback Raw Login Successful. Setting session...');
-                const { error: sessionError } = await signInWithToken(data.access_token, data.refresh_token);
 
-                if (sessionError) {
-                    throw new Error(`Session set error: ${sessionError}`);
+                // Set session but don't wait forever. If setSession hangs (due to onAuthStateChange listeners),
+                // we proceed anyway because the token is valid and might work for next reload.
+                const setSessionPromise = signInWithToken(data.access_token, data.refresh_token);
+
+                const sessionTimeout = new Promise((resolve) => setTimeout(() => resolve('TIMEOUT'), 3000));
+
+                const sessionResult = await Promise.race([setSessionPromise, sessionTimeout]);
+
+                if (sessionResult === 'TIMEOUT') {
+                    addLog('Session set timed out (background listeners stuck?). Forcing redirect...');
+                } else if ((sessionResult as any).error) {
+                    throw new Error(`Session set error: ${(sessionResult as any).error}`);
                 }
 
                 addLog('Session active. Redirecting...');

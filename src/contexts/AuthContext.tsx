@@ -24,17 +24,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const fetchRole = async (userId: string) => {
         try {
-            const { data, error } = await supabase
+            // Race supabase call against a 2s timeout. 
+            // If Supabase is slow, we assume default role to unblock the UI.
+            const failure = new Promise<{ error: string }>((resolve) =>
+                setTimeout(() => resolve({ error: 'TIMEOUT' }), 2000)
+            );
+
+            const query = supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', userId)
                 .single();
 
-            if (error || !data) {
-                console.warn('Error fetching role:', error);
+            const response = await Promise.race([query, failure]) as any;
+
+            if (response.error || !response.data) {
+                console.warn('Error fetching role (or timeout):', response.error);
                 return 'reader';
             }
-            return (data.role as UserRole) || 'reader';
+            return (response.data.role as UserRole) || 'reader';
         } catch (err) {
             console.error('Unexpected error fetching role:', err);
             return 'reader';
