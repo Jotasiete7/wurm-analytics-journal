@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { articleService } from '../../services/articles';
-import { ChevronLeft, Save, Loader2 } from 'lucide-react';
+import { ChevronLeft, Save, Loader2, Eye, Check } from 'lucide-react';
 
 const Editor = () => {
     const { user, role, loading } = useAuth();
@@ -197,11 +197,24 @@ const Editor = () => {
                         {uiStatus}
                     </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
+                    {/* View Live Button - Only show if published */}
+                    {status === 'published' && slug && (
+                        <a
+                            href={`/research/${slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:bg-[var(--color-accent)] hover:text-black transition-colors uppercase tracking-wider bg-transparent border border-[var(--color-border)] text-[var(--color-text-heading)] px-4 py-2 font-bold flex items-center gap-2"
+                        >
+                            <Eye size={16} />
+                            <span className="hidden md:inline">View Live</span>
+                        </a>
+                    )}
+
                     <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="bg-transparent border border-[var(--color-border)] text-xs uppercase px-2 outline-none focus:border-[var(--color-accent)]"
+                        className="bg-transparent border border-[var(--color-border)] text-xs uppercase px-3 outline-none focus:border-[var(--color-accent)] hover:border-[var(--color-accent)] transition-colors"
                         title="Status"
                     >
                         <option value="draft">Draft</option>
@@ -212,10 +225,16 @@ const Editor = () => {
                     <button
                         onClick={handleSave}
                         disabled={uiStatus === 'saving'}
-                        className="hover:bg-[var(--color-accent)] hover:text-black transition-colors uppercase tracking-wider bg-[var(--color-text-heading)] text-[var(--color-bg-body)] px-6 py-2 font-bold flex items-center gap-2 disabled:opacity-50"
+                        className="hover:bg-[var(--color-accent)] hover:text-black transition-colors uppercase tracking-wider bg-[var(--color-text-heading)] text-[var(--color-bg-body)] px-6 py-2 font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {uiStatus === 'saving' ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                        Save
+                        {uiStatus === 'saving' ? (
+                            <Loader2 size={16} className="animate-spin" />
+                        ) : uiStatus === 'saved' ? (
+                            <Check size={16} className="text-green-400" />
+                        ) : (
+                            <Save size={16} />
+                        )}
+                        <span>{uiStatus === 'saving' ? 'Saving...' : uiStatus === 'saved' ? 'Saved!' : 'Save'}</span>
                     </button>
                 </div>
             </div>
