@@ -40,11 +40,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (response.error || !response.data) {
                 console.warn('Error fetching role (or timeout):', response.error);
+                // RESILIENCE: If we already have a privileged role, keep it instead of downgrading due to network glitch
+                if (role === 'admin' || role === 'editor') {
+                    console.warn('Preserving existing role due to fetch failure:', role);
+                    return role;
+                }
                 return 'reader';
             }
             return (response.data.role as UserRole) || 'reader';
         } catch (err) {
             console.error('Unexpected error fetching role:', err);
+            // RESILIENCE: Keep existing role on crash
+            if (role === 'admin' || role === 'editor') {
+                return role;
+            }
             return 'reader';
         }
     };
@@ -68,13 +77,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         initAuth();
 
         // Listen for changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            // console.log('Auth Event:', event); // Debug
+
             setSession(session);
             setUser(session?.user ?? null);
 
             if (session?.user) {
-                // Only fetch if we don't have it or if user changed (though usually session change implies user change)
-                // For safety, re-fetch. It's cheap.
+                // Optimization: Don't re-fetch role on TOKEN_REFRESH if we already have a role
+                // This prevents session interruptions if the DB is momentarily slow during a refresh
+                if (event === 'TOKEN_REFRESHED' && role) {
+                    return;
+                }
+
                 const userRole = await fetchRole(session.user.id);
                 setRole(userRole);
             } else {
