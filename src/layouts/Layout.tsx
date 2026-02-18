@@ -121,9 +121,10 @@ const Layout = () => {
                             &copy; 2026 A Guilda. All rights dedicated.
                         </div>
                         <div className="flex gap-6 text-xs font-mono text-wurm-muted uppercase tracking-widest justify-center">
+                            <a href="https://wurm-aguild-site.pages.dev" className="hover:text-wurm-accent transition-colors">Portal</a>
                             <a href="https://wurm-recipe-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Recipes</a>
                             <a href="https://wurm-mining-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Mining</a>
-                            <a href="#" className="hover:text-wurm-accent transition-colors">Legal</a>
+                            <a href="https://wurm-liturgy.pages.dev" className="hover:text-wurm-accent transition-colors">Liturgy</a>
                         </div>
                     </div>
                 </div>
