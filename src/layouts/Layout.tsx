@@ -1,20 +1,26 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import { ArrowLeft, Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
+import EcosystemDropdown from '../components/EcosystemDropdown';
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext'; // reserved for future i18n
 
 
 const Layout = () => {
-    const { t } = useLanguage();
+    useLanguage(); // reserved for future i18n use
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [menuLocationKey, setMenuLocationKey] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Close menu on route change
-    useEffect(() => {
-        setIsMenuOpen(false);
-    }, [location]);
+    // Derive: close menu whenever route changes
+    const effectiveMenuOpen = isMenuOpen && location.key === menuLocationKey;
+
+    const openMenu = () => {
+        setMenuLocationKey(location.key);
+        setIsMenuOpen(true);
+    };
+    const closeMenu = () => setIsMenuOpen(false);
 
     return (
         <div className="min-h-screen bg-wurm-bg flex flex-col items-center selection:bg-wurm-accent selection:text-black font-sans">
@@ -22,19 +28,8 @@ const Layout = () => {
             <header className="sticky top-0 z-50 w-full bg-wurm-bg/95 backdrop-blur-sm border-b border-wurm-border/50">
                 <div className="max-w-[var(--spacing-measure-wide)] mx-auto px-6 py-6 flex items-center justify-between">
 
-                    {/* Left: Portal Link (Minimal) */}
+                    {/* Left: Brand */}
                     <div className="flex-1 flex justify-start">
-                        <a
-                            href="https://wurm-aguild-site.pages.dev"
-                            className="group flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-wurm-muted hover:text-wurm-accent transition-colors"
-                        >
-                            <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />
-                            <span className="hidden sm:inline">{t('Portal', 'Portal')}</span>
-                        </a>
-                    </div>
-
-                    {/* Center: Halftone Logo (Primary Brand) */}
-                    <div className="flex-1 flex justify-center">
                         <NavLink to="/" className="group block p-2">
                             <img
                                 src="/logo-sm.webp"
@@ -44,9 +39,8 @@ const Layout = () => {
                         </NavLink>
                     </div>
 
-                    {/* Right: Navigation + Lang */}
-                    <div className="flex-1 flex justify-end items-center gap-6">
-                        {/* Desktop Nav */}
+                    {/* Center: Section Nav (Desktop) */}
+                    <div className="flex-1 flex justify-center">
                         <nav className="hidden md:flex items-center gap-6 text-xs font-mono uppercase tracking-widest text-wurm-muted">
                             {['Analysis', 'Statistics', 'Investigations'].map((item) => (
                                 <NavLink
@@ -58,15 +52,14 @@ const Layout = () => {
                                 </NavLink>
                             ))}
                         </nav>
+                    </div>
 
-                        {/* Mobile Menu Toggle */}
-                        <button
-                            className="md:hidden text-wurm-muted hover:text-wurm-accent"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
+                    {/* Right: Ecosystem + Lang + Mobile Toggle */}
+                    <div className="flex-1 flex justify-end items-center gap-4">
+                        {/* Ecosystem Dropdown (Desktop) */}
+                        <div className="hidden md:block">
+                            <EcosystemDropdown />
+                        </div>
 
                         {/* Divider (Desktop Only) */}
                         <div className="hidden md:block h-3 w-px bg-wurm-border"></div>
@@ -75,23 +68,34 @@ const Layout = () => {
                         <div className="hidden md:block">
                             <LanguageSwitcher />
                         </div>
+
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            className="md:hidden text-wurm-muted hover:text-wurm-accent"
+                            onClick={() => effectiveMenuOpen ? closeMenu() : openMenu()}
+                            aria-label="Toggle menu"
+                        >
+                            {effectiveMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
                     </div>
                 </div>
 
                 {/* Mobile Menu Overlay */}
-                {isMenuOpen && (
+                {effectiveMenuOpen && (
                     <div className="md:hidden absolute top-full left-0 w-full bg-wurm-bg border-b border-wurm-border/50 animate-in slide-in-from-top-2 duration-200 shadow-xl">
                         <nav className="flex flex-col items-center py-8 gap-6 text-sm font-mono uppercase tracking-widest text-wurm-muted">
                             {['Analysis', 'Statistics', 'Investigations'].map((item) => (
                                 <NavLink
                                     key={item}
                                     to={`/?cat=${item.toUpperCase()}`}
+                                    onClick={closeMenu}
                                     className="hover:text-wurm-accent transition-colors py-2"
                                 >
                                     {item}
                                 </NavLink>
                             ))}
                             <div className="w-12 h-px bg-wurm-border opacity-30 my-2"></div>
+                            <EcosystemDropdown />
                             <LanguageSwitcher />
                         </nav>
                     </div>
