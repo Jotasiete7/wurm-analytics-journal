@@ -1,9 +1,11 @@
-import { Image, ImagePlus, Star, Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Link as LinkIcon } from 'lucide-react';
+import { Image, ImagePlus, Star, Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Link as LinkIcon, Quote, Minus, Eye, Edit3 } from 'lucide-react';
 import { useState } from 'react';
 
 interface EditorToolbarProps {
     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
     onInsert: (text: string) => void;
+    showPreview: boolean;
+    onTogglePreview: () => void;
 }
 
 interface ImageModalState {
@@ -11,7 +13,7 @@ interface ImageModalState {
     type: 'simple' | 'withSize' | 'withCaption';
 }
 
-const EditorToolbar = ({ textareaRef, onInsert }: EditorToolbarProps) => {
+const EditorToolbar = ({ textareaRef, onInsert, showPreview, onTogglePreview }: EditorToolbarProps) => {
     const [imageModal, setImageModal] = useState<ImageModalState>({ isOpen: false, type: 'simple' });
     const [imageUrl, setImageUrl] = useState('');
     const [imageAlt, setImageAlt] = useState('');
@@ -19,6 +21,8 @@ const EditorToolbar = ({ textareaRef, onInsert }: EditorToolbarProps) => {
     const [imageCaption, setImageCaption] = useState('');
 
     const insertText = (text: string) => {
+        if (showPreview) return; // Disable insertion in preview mode
+
         if (textareaRef.current) {
             const textarea = textareaRef.current;
             const start = textarea.selectionStart;
@@ -36,6 +40,7 @@ const EditorToolbar = ({ textareaRef, onInsert }: EditorToolbarProps) => {
     };
 
     const openImageModal = (type: 'simple' | 'withSize' | 'withCaption') => {
+        if (showPreview) return;
         setImageModal({ isOpen: true, type });
         setImageUrl('');
         setImageAlt('');
@@ -84,51 +89,69 @@ const EditorToolbar = ({ textareaRef, onInsert }: EditorToolbarProps) => {
         // Text formatting
         { icon: Bold, label: 'Negrito', action: () => insertText('**{selection}**'), group: 'text' },
         { icon: Italic, label: 'Itálico', action: () => insertText('*{selection}*'), group: 'text' },
+        { icon: Quote, label: 'Citação', action: () => insertText('\n> {selection}\n'), group: 'text' },
         { icon: Heading1, label: 'Título 1', action: () => insertText('\n# {selection}\n'), group: 'text' },
         { icon: Heading2, label: 'Título 2', action: () => insertText('\n## {selection}\n'), group: 'text' },
         { icon: Heading3, label: 'Título 3', action: () => insertText('\n### {selection}\n'), group: 'text' },
+
+        // Lists & Dividers
+        { icon: List, label: 'Lista', action: () => insertText('\n- {selection}\n'), group: 'list' },
+        { icon: ListOrdered, label: 'Lista Numerada', action: () => insertText('\n1. {selection}\n'), group: 'list' },
+        { icon: Minus, label: 'Separador', action: () => insertText('\n---\n'), group: 'list' },
+        { icon: LinkIcon, label: 'Link', action: () => insertText('[{selection}](URL)'), group: 'list' },
 
         // Images
         { icon: Image, label: 'Imagem Simples', action: () => openImageModal('simple'), group: 'image' },
         { icon: ImagePlus, label: 'Imagem com Tamanho', action: () => openImageModal('withSize'), group: 'image' },
         { icon: Star, label: 'Imagem com Legenda', action: () => openImageModal('withCaption'), group: 'image' },
-
-        // Lists
-        { icon: List, label: 'Lista', action: () => insertText('\n- {selection}\n'), group: 'list' },
-        { icon: ListOrdered, label: 'Lista Numerada', action: () => insertText('\n1. {selection}\n'), group: 'list' },
-        { icon: LinkIcon, label: 'Link', action: () => insertText('[{selection}](URL)'), group: 'list' },
     ];
 
     return (
         <>
-            <div className="sticky top-0 z-20 bg-wurm-panel border border-wurm-border rounded-t-lg p-2 flex flex-wrap gap-1">
-                {toolbarButtons.map((button, index) => {
-                    const Icon = button.icon;
-                    const showDivider = index > 0 && toolbarButtons[index - 1].group !== button.group;
+            <div className="sticky top-0 z-20 bg-wurm-panel border border-wurm-border rounded-t-lg p-2 flex flex-wrap gap-1 justify-between items-center">
+                <div className="flex flex-wrap gap-1">
+                    {toolbarButtons.map((button, index) => {
+                        const Icon = button.icon;
+                        const showDivider = index > 0 && toolbarButtons[index - 1].group !== button.group;
 
-                    return (
-                        <div key={index} className="flex items-center">
-                            {showDivider && <div className="w-px h-8 bg-wurm-border mx-1" />}
-                            <button
-                                type="button"
-                                onClick={button.action}
-                                className="min-w-[44px] min-h-[44px] p-2 border border-wurm-border bg-wurm-bg hover:bg-wurm-accent hover:text-black hover:border-wurm-accent transition-colors rounded flex items-center justify-center group relative"
-                                title={button.label}
-                            >
-                                <Icon size={18} />
-                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                                    {button.label}
-                                </span>
-                            </button>
-                        </div>
-                    );
-                })}
+                        return (
+                            <div key={index} className="flex items-center">
+                                {showDivider && <div className="w-px h-8 bg-wurm-border mx-1" />}
+                                <button
+                                    type="button"
+                                    onClick={button.action}
+                                    disabled={showPreview}
+                                    className={`min-w-[44px] min-h-[44px] p-2 border border-wurm-border bg-wurm-bg hover:bg-wurm-accent hover:text-black hover:border-wurm-accent transition-colors rounded flex items-center justify-center group relative ${showPreview ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    title={button.label}
+                                >
+                                    <Icon size={18} />
+                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                        {button.label}
+                                    </span>
+                                </button>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Preview Toggle */}
+                <div className="pl-4 border-l border-wurm-border ml-2">
+                    <button
+                        type="button"
+                        onClick={onTogglePreview}
+                        className={`min-w-[44px] min-h-[44px] p-2 border border-wurm-border transition-colors rounded flex items-center justify-center gap-2 font-bold uppercase text-xs tracking-wider px-4 ${showPreview ? 'bg-wurm-accent text-black border-wurm-accent' : 'bg-wurm-bg text-wurm-accent hover:border-wurm-accent'}`}
+                        title={showPreview ? "Voltar para Edição" : "Visualizar Resultado"}
+                    >
+                        {showPreview ? <Edit3 size={18} /> : <Eye size={18} />}
+                        <span className="hidden md:inline">{showPreview ? 'Editar' : 'Preview'}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Image Insert Modal */}
             {imageModal.isOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-wurm-panel border-2 border-wurm-accent rounded-lg p-6 max-w-md w-full space-y-4">
+                    <div className="bg-wurm-panel border-2 border-wurm-accent rounded-lg p-6 max-w-md w-full space-y-4 shadow-2xl">
                         <h3 className="text-xl font-bold text-wurm-text">
                             {imageModal.type === 'simple' && 'Inserir Imagem'}
                             {imageModal.type === 'withSize' && 'Inserir Imagem com Tamanho'}

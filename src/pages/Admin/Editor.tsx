@@ -5,6 +5,7 @@ import { supabase } from '../../supabaseClient';
 import { articleService } from '../../services/articles';
 import { ChevronLeft, Save, Loader2, Eye, Check } from 'lucide-react';
 import EditorToolbar from '../../components/EditorToolbar';
+import Markdown from 'react-markdown';
 
 const Editor = () => {
     const { user, role, loading } = useAuth();
@@ -32,6 +33,9 @@ const Editor = () => {
     const [uiStatus, setUiStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>('idle');
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+    // Preview State
+    const [showPreview, setShowPreview] = useState(false);
 
     // Refs for textareas (for toolbar)
     const contentEnRef = useRef<HTMLTextAreaElement>(null);
@@ -225,6 +229,10 @@ const Editor = () => {
         );
     }
 
+    const currentContent = lang === 'en' ? contentEn : contentPt;
+    // Defensive fix for newlines if needed, though editor usually handles them fine
+    const safeContent = currentContent.replace(/\\n/g, '\n');
+
     return (
         <div className="min-h-screen bg-[var(--color-bg-body)] text-[var(--color-text-body)] font-mono text-sm selection:bg-[var(--color-accent)] selection:text-black">
             {/* Toolbar */}
@@ -393,7 +401,7 @@ const Editor = () => {
                     </div>
 
                     <div className="relative">
-                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2 flex gap-3 z-10">
+                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2 flex gap-3 z-10 transition-opacity duration-300" style={{ opacity: showPreview ? 0 : 1 }}>
                             <span>Markdown ({lang.toUpperCase()})</span>
                             <span className="text-gray-500">
                                 {(lang === 'en' ? contentEn : contentPt).trim().split(/\s+/).filter(w => w.length > 0).length} words
@@ -405,16 +413,33 @@ const Editor = () => {
                             <EditorToolbar
                                 textareaRef={lang === 'en' ? contentEnRef : contentPtRef}
                                 onInsert={handleInsert}
+                                showPreview={showPreview}
+                                onTogglePreview={() => setShowPreview(!showPreview)}
                             />
                         </div>
 
-                        <textarea
-                            ref={lang === 'en' ? contentEnRef : contentPtRef}
-                            value={lang === 'en' ? contentEn : contentPt}
-                            onChange={e => lang === 'en' ? setContentEn(e.target.value) : setContentPt(e.target.value)}
-                            placeholder={lang === 'en' ? "# Write your analysis here..." : "# Escreva sua análise aqui..."}
-                            className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed text-[var(--color-text-body)] resize-y border border-[var(--color-border)] focus:border-[var(--color-accent)] transition-colors"
-                        />
+                        {showPreview ? (
+                            <div className="min-h-[600px] bg-[var(--color-bg-paper)] p-6 border border-[var(--color-border)] animate-in fade-in duration-300">
+                                <div className="prose prose-invert prose-lg max-w-none 
+                                    prose-headings:font-serif prose-headings:font-bold prose-headings:text-wurm-text
+                                    prose-p:font-sans prose-p:text-wurm-muted prose-p:leading-relaxed prose-p:text-justify prose-p:hyphens-auto
+                                    prose-a:text-wurm-accent prose-a:no-underline hover:prose-a:underline
+                                    prose-strong:text-wurm-text prose-strong:font-semibold
+                                    prose-blockquote:border-l-wurm-accent prose-blockquote:text-wurm-text prose-blockquote:font-serif prose-blockquote:italic
+                                    prose-li:text-wurm-muted
+                                    marker:text-wurm-accent">
+                                    <Markdown>{safeContent}</Markdown>
+                                </div>
+                            </div>
+                        ) : (
+                            <textarea
+                                ref={lang === 'en' ? contentEnRef : contentPtRef}
+                                value={lang === 'en' ? contentEn : contentPt}
+                                onChange={e => lang === 'en' ? setContentEn(e.target.value) : setContentPt(e.target.value)}
+                                placeholder={lang === 'en' ? "# Write your analysis here..." : "# Escreva sua análise aqui..."}
+                                className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed text-[var(--color-text-body)] resize-y border border-[var(--color-border)] border-t-0 focus:border-[var(--color-accent)] transition-colors"
+                            />
+                        )}
                     </div>
                 </div>
             </div>

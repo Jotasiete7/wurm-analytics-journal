@@ -115,10 +115,11 @@ const ResearchView = () => {
                 {/* Content - Typographic Focus */}
                 <div className="prose prose-invert prose-lg max-w-none 
                     prose-headings:font-serif prose-headings:font-bold prose-headings:text-wurm-text
-                    prose-p:font-sans prose-p:text-wurm-muted prose-p:leading-relaxed
+                    prose-p:font-sans prose-p:text-wurm-muted prose-p:leading-relaxed prose-p:text-justify prose-p:hyphens-auto
                     prose-a:text-wurm-accent prose-a:no-underline hover:prose-a:underline
                     prose-strong:text-wurm-text prose-strong:font-semibold
                     prose-blockquote:border-l-wurm-accent prose-blockquote:text-wurm-text prose-blockquote:font-serif prose-blockquote:italic
+                    prose-li:text-wurm-muted
                     marker:text-wurm-accent">
                     <Markdown>{safeContent}</Markdown>
                 </div>
