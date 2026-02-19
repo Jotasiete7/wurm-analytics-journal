@@ -80,8 +80,23 @@ export const articleService = {
     },
 
     async vote(id: string) {
-        // Placeholder for Likes implementation
-        console.log('Vote/Like logic to be implemented with proper Auth', id);
+        try {
+            const { error } = await supabase
+                .from('article_likes')
+                .insert([{ article_id: id }]);
+
+            if (error) {
+                // Ignore unique violation (23505) - user already voted
+                if (error.code === '23505') {
+                    console.log('User already voted (db constraint)');
+                    return;
+                }
+                throw error;
+            }
+        } catch (err) {
+            console.error('Error voting:', err);
+            throw err;
+        }
     },
 
     // Map DB structure to our frontend Document interface
@@ -98,7 +113,7 @@ export const articleService = {
             date: dbArticle.published_at
                 ? new Date(dbArticle.published_at).toISOString().split('T')[0]
                 : new Date(dbArticle.created_at).toISOString().split('T')[0],
-            votes: 0,
+            votes: 0, // This is loaded separately via getStats usually, or could be joined
             views: dbArticle.views,
             readingTime: dbArticle.reading_time || '5 min read',
 
