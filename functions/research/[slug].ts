@@ -17,8 +17,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         const supabaseKey = env.VITE_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseKey) {
-            console.warn('Supabase credentials missing in environment.');
-            return response;
+            const missingEnvResponse = new Response(response.body, response);
+            missingEnvResponse.headers.set('x-debug-og-status', 'missing-env');
+            return missingEnvResponse;
         }
 
         // Busca o artigo via REST API do Supabase para evitar dependências pesadas na Edge
@@ -33,12 +34,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             }
         );
 
-        if (!apiReq.ok) return response;
+        if (!apiReq.ok) {
+            const apiErrorResponse = new Response(response.body, response);
+            apiErrorResponse.headers.set('x-debug-og-status', `api-error-${apiReq.status}`);
+            return apiErrorResponse;
+        }
 
         const articles = await apiReq.json() as any[];
         const article = articles?.[0];
 
-        if (!article) return response;
+        if (!article) {
+            const noArticleResponse = new Response(response.body, response);
+            noArticleResponse.headers.set('x-debug-og-status', 'article-not-found');
+            return noArticleResponse;
+        }
 
         // Determina título e descrição (priorizando PT se disponível, seguindo o padrão do site)
         const title = article.title_pt || article.title_en || article.title || "Wurm Analytics Journal";
@@ -46,7 +55,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         const imageUrl = "https://wurm-analytics-journal.pages.dev/og-image.png";
         const pageUrl = `https://wurm-analytics-journal.pages.dev/research/${slug}`;
 
-        return new HTMLRewriter()
+        const rewrittenResponse = new HTMLRewriter()
             .on('title', {
                 element(element) {
                     element.setInnerContent(`${title} | Wurm Analytics Journal`);
@@ -94,8 +103,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             })
             .transform(response);
 
-    } catch (e) {
+        const okResponse = new Response(rewrittenResponse.body, rewrittenResponse);
+        okResponse.headers.set('x-debug-og-status', 'success');
+        return okResponse;
+
+    } catch (e: any) {
         console.error('Error in OG function:', e);
-        return response;
+        const errResponse = new Response(response.body, response);
+        errResponse.headers.set('x-debug-og-error', e.message || 'unknown');
+        return errResponse;
     }
 };
