@@ -129,6 +129,7 @@ const Layout = () => {
                             <a href="https://wurm-recipe-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Recipes</a>
                             <a href="https://wurm-mining-tool.pages.dev" className="hover:text-wurm-accent transition-colors">Mining</a>
                             <a href="https://wurm-liturgy.pages.dev" className="hover:text-wurm-accent transition-colors">Liturgy</a>
+                            <a href="https://wurm-badges.pages.dev" className="hover:text-wurm-accent transition-colors">Badges</a>
                         </div>
                     </div>
                 </div>
