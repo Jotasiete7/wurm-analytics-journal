@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Header as AgHeader } from '@antigravity/layout/Header';
-import { LanguageSwitch } from '@antigravity/modules/LanguageSwitch';
-import agStyles from '@antigravity/layout/Header.module.css';
+import { Header as AgHeader } from '@ecossistema-guilda/layout/Header';
+import { LanguageSwitch } from '@ecossistema-guilda/modules/LanguageSwitch';
+import agStyles from '@ecossistema-guilda/layout/Header.module.css';
 import { useLanguage } from '../contexts/LanguageContext';
 
 
 const Layout = () => {
-    useLanguage(); // reserved for future i18n use
+    const { language: lang, setLanguage: setLang } = useLanguage();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [menuLocationKey, setMenuLocationKey] = useState('');
     const location = useLocation();

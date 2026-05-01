@@ -5,7 +5,7 @@ import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
 import { LanguageProvider } from './contexts/LanguageContext.tsx'
 
-import { LayoutBase } from '@antigravity/layout/LayoutBase'
+import { LayoutBase } from '@ecossistema-guilda/layout/LayoutBase'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
