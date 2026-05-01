@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { Header as AgHeader } from '@ecossistema-guilda/layout/Header';
 import { LanguageSwitch } from '@ecossistema-guilda/modules/LanguageSwitch';
 import agStyles from '@ecossistema-guilda/layout/Header.module.css';
