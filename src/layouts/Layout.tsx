@@ -7,20 +7,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 
 const Layout = () => {
-    const { language: lang, setLanguage: setLang } = useLanguage();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [menuLocationKey, setMenuLocationKey] = useState('');
-    const location = useLocation();
+    const { lang, setLang } = useLanguage();
     const navigate = useNavigate();
-
-    // Derive: close menu whenever route changes
-    const effectiveMenuOpen = isMenuOpen && location.key === menuLocationKey;
-
-    const openMenu = () => {
-        setMenuLocationKey(location.key);
-        setIsMenuOpen(true);
-    };
-    const closeMenu = () => setIsMenuOpen(false);
 
     return (
         <div className="min-h-screen bg-wurm-bg flex flex-col items-center selection:bg-wurm-accent selection:text-black font-sans">
