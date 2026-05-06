@@ -28,6 +28,7 @@ interface DbArticle {
     views: number;
     created_at: string;
     published_at: string | null;
+    article_likes?: { count: number }[];
 }
 
 export const articleService = {
@@ -36,14 +37,14 @@ export const articleService = {
             .from('articles')
             .select('*, article_likes(count)')
             .eq('status', status)
-            .order('published_at', { ascending: false });
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error('Error fetching articles:', error);
             return [];
         }
 
-        return (data as any[]).map(this.mapToDocument);
+        return (data as DbArticle[]).map(this.mapToDocument.bind(this));
     },
 
     async getAllForAdmin() {
@@ -57,7 +58,7 @@ export const articleService = {
             return [];
         }
 
-        return (data as any[]).map(this.mapToDocument);
+        return (data as DbArticle[]).map(this.mapToDocument.bind(this));
     },
 
     async getBySlug(slug: string) {
@@ -68,7 +69,7 @@ export const articleService = {
             .single();
 
         if (error) return null;
-        return this.mapToDocument(data as any);
+        return this.mapToDocument(data as DbArticle);
     },
 
     async incrementView(id: string) {
@@ -100,7 +101,7 @@ export const articleService = {
     },
 
     // Map DB structure to our frontend Document interface
-    mapToDocument(dbArticle: any): Document {
+    mapToDocument(dbArticle: DbArticle): Document {
         // Fallback logic: If _en columns are missing, check if legacy columns exist (during migration)
         const t_en = dbArticle.title_en || dbArticle.title || 'Untitled';
         const e_en = dbArticle.excerpt_en || dbArticle.excerpt || '';
