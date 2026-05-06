@@ -91,8 +91,9 @@ select using (true);
 create policy "Authenticated users can toggle likes" on article_likes for
 insert with check (auth.uid() = user_id);
 create policy "Users can remove their own likes" on article_likes for delete using (auth.uid() = user_id);
--- 7. HELPER VIEW (Optional)
-create or replace view article_stats as
+-- 7. HELPER VIEW (Secure version)
+drop view if exists public.article_stats;
+create view public.article_stats with (security_invoker = true) as
 select a.id,
     count(l.user_id) as likes_count
 from articles a
