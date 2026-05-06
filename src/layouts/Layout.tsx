@@ -17,11 +17,13 @@ const Layout = () => {
                 currentToolId="analytics"
                 LinkComponent={NavLink}
                 logo={
-                    <img
-                        src="/logo-sm.webp"
-                        alt="A Guilda Analytics"
-                        className="h-8 w-auto object-contain opacity-90 transition-opacity"
-                    />
+                    <NavLink to="/">
+                        <img
+                            src="/logo-sm.webp"
+                            alt="A Guilda Analytics"
+                            className="h-8 w-auto object-contain opacity-90 transition-opacity"
+                        />
+                    </NavLink>
                 }
                 centralNav={
                     <nav className="hidden md:flex items-center gap-6 text-xs font-mono uppercase tracking-widest text-wurm-muted">
@@ -55,9 +57,9 @@ const Layout = () => {
                 <div className="max-w-[var(--spacing-measure-wide)] mx-auto px-6 py-12 flex flex-col items-center opacity-60">
 
                     {/* Brand Reinforcement (Minimal "a") */}
-                    <div className="mb-8 opacity-20 hover:opacity-40 transition-opacity">
+                    <NavLink to="/" className="mb-8 opacity-20 hover:opacity-40 transition-opacity">
                         <img src="/logo-sm.webp" alt="A Guilda" className="h-5 w-auto grayscale" />
-                    </div>
+                    </NavLink>
 
                     <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4 text-center md:text-left">
                         <div
