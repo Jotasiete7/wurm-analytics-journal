@@ -34,7 +34,7 @@ export const articleService = {
     async getAll(status: 'published' | 'draft' = 'published') {
         const { data, error } = await supabase
             .from('articles')
-            .select('*')
+            .select('*, article_likes(count)')
             .eq('status', status)
             .order('published_at', { ascending: false });
 
@@ -43,13 +43,13 @@ export const articleService = {
             return [];
         }
 
-        return (data as DbArticle[]).map(this.mapToDocument);
+        return (data as any[]).map(this.mapToDocument);
     },
 
     async getAllForAdmin() {
         const { data, error } = await supabase
             .from('articles')
-            .select('*')
+            .select('*, article_likes(count)')
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -57,25 +57,25 @@ export const articleService = {
             return [];
         }
 
-        return (data as DbArticle[]).map(this.mapToDocument);
+        return (data as any[]).map(this.mapToDocument);
     },
 
     async getBySlug(slug: string) {
         const { data, error } = await supabase
             .from('articles')
-            .select('*')
+            .select('*, article_likes(count)')
             .eq('slug', slug)
             .single();
 
         if (error) return null;
-        return this.mapToDocument(data as DbArticle);
+        return this.mapToDocument(data as any);
     },
 
     async incrementView(id: string) {
-        // Simple increment for now. RPC is better but this works for MVP.
-        const { data } = await supabase.from('articles').select('views').eq('id', id).single();
-        if (data) {
-            await supabase.from('articles').update({ views: (data.views || 0) + 1 }).eq('id', id);
+        // Atomic increment via RPC
+        const { error } = await supabase.rpc('increment_article_views', { article_id: id });
+        if (error) {
+            console.error('Error incrementing views:', error);
         }
     },
 
@@ -100,11 +100,14 @@ export const articleService = {
     },
 
     // Map DB structure to our frontend Document interface
-    mapToDocument(dbArticle: DbArticle): Document {
+    mapToDocument(dbArticle: any): Document {
         // Fallback logic: If _en columns are missing, check if legacy columns exist (during migration)
         const t_en = dbArticle.title_en || dbArticle.title || 'Untitled';
         const e_en = dbArticle.excerpt_en || dbArticle.excerpt || '';
         const c_en = dbArticle.content_en || dbArticle.content || '';
+
+        // Extract votes from joined query result
+        const votesCount = dbArticle.article_likes?.[0]?.count || 0;
 
         return {
             id: dbArticle.id,
@@ -113,7 +116,7 @@ export const articleService = {
             date: dbArticle.published_at
                 ? new Date(dbArticle.published_at).toISOString().split('T')[0]
                 : new Date(dbArticle.created_at).toISOString().split('T')[0],
-            votes: 0, // This is loaded separately via getStats usually, or could be joined
+            votes: votesCount,
             views: dbArticle.views,
             readingTime: dbArticle.reading_time || '5 min read',
 
