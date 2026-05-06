@@ -181,6 +181,20 @@
   .preview-content a { @apply text-wurm-accent hover:underline decoration-1 underline-offset-4; }
   .preview-content hr { @apply border-0 h-px bg-wurm-border my-12; }
 
+  /* Callout Boxes */
+  .callout { @apply p-4 my-6 rounded border-l-4 bg-wurm-panel/80; }
+  .callout-note { @apply border-wurm-accent; }
+  .callout-warning { @apply border-wurm-warning; }
+  .callout-success { @apply border-wurm-success; }
+  .callout-title { @apply font-bold text-xs uppercase tracking-widest mb-2 flex items-center gap-2; }
+
+  /* Tables */
+  .preview-content table { @apply w-full border-collapse my-8 text-sm font-sans; }
+  .preview-content th { @apply text-left p-3 bg-wurm-panel border border-wurm-border font-bold uppercase tracking-wider text-[10px] text-wurm-muted; }
+  .preview-content td { @apply p-3 border border-wurm-border text-wurm-text; }
+  .preview-content tr:nth-child(even) { @apply bg-white/[0.02]; }
+
+
   .touch-target {
     min-height: 44px;
     min-width: 44px;

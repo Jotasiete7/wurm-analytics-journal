@@ -1,4 +1,4 @@
-import { Image, ImagePlus, Star, Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Link as LinkIcon, Quote, Minus, Eye, Edit3 } from 'lucide-react';
+import { Image, ImagePlus, Star, Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Link as LinkIcon, Quote, Minus, Eye, Edit3, Table, Info, AlertTriangle, CheckCircle, Code } from 'lucide-react';
 import { useState } from 'react';
 
 interface EditorToolbarProps {
@@ -99,6 +99,30 @@ const EditorToolbar = ({ textareaRef, onInsert, showPreview, onTogglePreview }: 
         { icon: ListOrdered, label: 'Lista Numerada', action: () => insertText('\n1. {selection}\n'), group: 'list' },
         { icon: Minus, label: 'Separador', action: () => insertText('\n---\n'), group: 'list' },
         { icon: LinkIcon, label: 'Link', action: () => insertText('[{selection}](URL)'), group: 'list' },
+
+        // Tables & Code
+        { icon: Table, label: 'Tabela', action: () => insertText('\n| Cabeçalho 1 | Cabeçalho 2 |\n| ----------- | ----------- |\n| Célula 1    | Célula 2    |\n'), group: 'extra' },
+        { icon: Code, label: 'Bloco de Código', action: () => insertText('\n```\n{selection}\n```\n'), group: 'extra' },
+
+        // Callouts
+        { 
+            icon: Info, 
+            label: 'Nota', 
+            action: () => insertText('\n<div class="callout callout-note">\n  <div class="callout-title">Nota</div>\n  {selection}\n</div>\n'), 
+            group: 'callout' 
+        },
+        { 
+            icon: AlertTriangle, 
+            label: 'Aviso', 
+            action: () => insertText('\n<div class="callout callout-warning">\n  <div class="callout-title">Aviso</div>\n  {selection}\n</div>\n'), 
+            group: 'callout' 
+        },
+        { 
+            icon: CheckCircle, 
+            label: 'Sucesso', 
+            action: () => insertText('\n<div class="callout callout-success">\n  <div class="callout-title">Sucesso</div>\n  {selection}\n</div>\n'), 
+            group: 'callout' 
+        },
 
         // Images
         { icon: Image, label: 'Imagem Simples', action: () => openImageModal('simple'), group: 'image' },

@@ -41,6 +41,11 @@ const Editor = () => {
     const contentEnRef = useRef<HTMLTextAreaElement>(null);
     const contentPtRef = useRef<HTMLTextAreaElement>(null);
 
+    // Advanced State
+    const [dualMode, setDualMode] = useState(false);
+    const [publishedAt, setPublishedAt] = useState<string>('');
+    const [isDeleting, setIsDeleting] = useState(false);
+
     // Redirect if not authorized
     useEffect(() => {
         if (!loading) {
@@ -75,10 +80,13 @@ const Editor = () => {
                     setContentPt(doc.content_pt || '');
 
                     // We need to fetch raw data for tags/status if not in Document interface
-                    const { data } = await supabase.from('articles').select('tags, status').eq('slug', routeSlug).single();
+                    const { data } = await supabase.from('articles').select('tags, status, published_at').eq('slug', routeSlug).single();
                     if (data) {
                         setTagsInput((data.tags || []).join(', '));
                         setStatus(data.status);
+                        if (data.published_at) {
+                            setPublishedAt(new Date(data.published_at).toISOString().slice(0, 16));
+                        }
                     }
 
                     setUiStatus('idle');
@@ -158,6 +166,7 @@ const Editor = () => {
                 reading_time: readingTime,
                 author_id: user?.id,
                 updated_at: new Date().toISOString(),
+                published_at: publishedAt ? new Date(publishedAt).toISOString() : (status === 'published' ? new Date().toISOString() : null),
             };
 
             if (idToUpdate) {
@@ -184,6 +193,21 @@ const Editor = () => {
             console.error(e);
             alert(`Error saving: ${e.message}`);
             setUiStatus('error');
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!originalSlug) return;
+        if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
+
+        setIsDeleting(true);
+        try {
+            const { error } = await supabase.from('articles').delete().eq('slug', originalSlug);
+            if (error) throw error;
+            navigate('/admin/dashboard');
+        } catch (e: any) {
+            alert(`Error deleting: ${e.message}`);
+            setIsDeleting(false);
         }
     };
 
@@ -263,6 +287,16 @@ const Editor = () => {
                         </button>
                     </div>
 
+                    {/* Dual Mode Switcher */}
+                    <div className="flex bg-[var(--color-bg-subtle)] rounded border border-[var(--color-border)] p-1 ml-4 hidden lg:flex">
+                        <button
+                            onClick={() => setDualMode(!dualMode)}
+                            className={`px-3 py-1 text-[10px] uppercase font-bold rounded transition-colors ${dualMode ? 'bg-[var(--color-accent)] text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-heading)]'}`}
+                        >
+                            Dual Edit
+                        </button>
+                    </div>
+
                     <div className="flex items-center gap-3">
                         {/* Unsaved Changes Indicator */}
                         {hasUnsavedChanges && uiStatus !== 'saving' && (
@@ -326,10 +360,10 @@ const Editor = () => {
                 </div>
             </div>
 
-            <div className="pt-24 pb-32 px-6 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+            <div className={`pt-24 pb-32 px-6 mx-auto grid gap-8 md:gap-12 ${dualMode ? 'max-w-[1600px] grid-cols-1 lg:grid-cols-12' : 'max-w-5xl grid-cols-1 md:grid-cols-12'}`}>
 
                 {/* Meta Panel (Shared) */}
-                <div className="md:col-span-4 space-y-6">
+                <div className={`${dualMode ? 'lg:col-span-2' : 'md:col-span-4'} space-y-6`}>
                     <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">Slug / URL</label>
                         <input
@@ -368,82 +402,165 @@ const Editor = () => {
                     <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)] flex justify-between">
                             <span>Excerpt ({lang.toUpperCase()})</span>
-                            <span className="text-gray-500">
-                                {(lang === 'en' ? excerptEn : excerptPt).length} chars
-                            </span>
                         </label>
                         <textarea
                             value={lang === 'en' ? excerptEn : excerptPt}
                             onChange={e => lang === 'en' ? setExcerptEn(e.target.value) : setExcerptPt(e.target.value)}
-                            className="w-full bg-[var(--color-bg-subtle)] border border-[var(--color-border)] p-3 text-xs outline-none focus:border-[var(--color-accent)] h-32 resize-none"
+                            className="w-full bg-[var(--color-bg-subtle)] border border-[var(--color-border)] p-3 text-xs outline-none focus:border-[var(--color-accent)] h-24 resize-none"
                             placeholder={lang === 'en' ? "Short description..." : "Breve descrição..."}
                         />
                     </div>
-                </div>
 
-                {/* Main Content Panel (Localized) */}
-                <div className="md:col-span-8 space-y-8">
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-center mb-1">
-                            <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">
-                                Title ({lang.toUpperCase()})
-                            </label>
-                            <span className="text-[10px] text-gray-500">
-                                {(lang === 'en' ? titleEn : titlePt).length} chars
-                            </span>
-                        </div>
-                        <input
-                            value={lang === 'en' ? titleEn : titlePt}
-                            onChange={e => lang === 'en' ? setTitleEn(e.target.value) : setTitlePt(e.target.value)}
-                            placeholder={lang === 'en' ? "Article Title" : "Título do Artigo"}
-                            className="w-full bg-transparent text-3xl md:text-4xl font-serif font-bold text-[var(--color-text-heading)] placeholder-opacity-20 placeholder-[var(--color-text-muted)] outline-none"
-                        />
-                    </div>
-
-                    <div className="relative">
-                        <div className="absolute top-0 right-0 text-[10px] text-[var(--color-text-meta)] bg-[var(--color-bg-body)] px-2 flex gap-3 z-10 transition-opacity duration-300" style={{ opacity: showPreview ? 0 : 1 }}>
-                            <span>Markdown ({lang.toUpperCase()})</span>
-                            <span className="text-gray-500">
-                                {(lang === 'en' ? contentEn : contentPt).trim().split(/\s+/).filter(w => w.length > 0).length} words
-                            </span>
-                        </div>
-
-                        {/* Editor Toolbar */}
-                        <div className="mt-6">
-                            <EditorToolbar
-                                textareaRef={lang === 'en' ? contentEnRef : contentPtRef}
-                                onInsert={handleInsert}
-                                showPreview={showPreview}
-                                onTogglePreview={() => setShowPreview(!showPreview)}
+                    {/* Advanced Settings */}
+                    <div className="pt-6 border-t border-[var(--color-border)] space-y-4">
+                        <h4 className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)] font-bold">Advanced</h4>
+                        
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-gray-500 uppercase">Published Date</label>
+                            <input
+                                type="datetime-local"
+                                value={publishedAt}
+                                onChange={e => setPublishedAt(e.target.value)}
+                                className="w-full bg-transparent border border-[var(--color-border)] p-2 text-[10px] outline-none focus:border-[var(--color-accent)]"
                             />
                         </div>
 
-                        {showPreview ? (
-                            <div className="min-h-[600px] bg-[var(--color-bg-paper)] p-6 border border-[var(--color-border)] animate-in fade-in duration-300">
-                                <div className="prose prose-invert prose-lg max-w-none 
-                                    prose-headings:font-serif prose-headings:font-bold prose-headings:text-wurm-text
-                                    prose-p:font-sans prose-p:text-wurm-muted prose-p:leading-relaxed prose-p:text-justify prose-p:hyphens-auto
-                                    prose-a:text-wurm-accent prose-a:no-underline hover:prose-a:underline
-                                    prose-strong:text-wurm-text prose-strong:font-semibold
-                                    prose-blockquote:border-l-wurm-accent prose-blockquote:text-wurm-text prose-blockquote:font-serif prose-blockquote:italic
-                                    prose-li:text-wurm-muted
-                                    marker:text-wurm-accent">
-                                    <Markdown>{safeContent}</Markdown>
-                                </div>
-                            </div>
-                        ) : (
-                            <textarea
-                                ref={lang === 'en' ? contentEnRef : contentPtRef}
-                                value={lang === 'en' ? contentEn : contentPt}
-                                onChange={e => lang === 'en' ? setContentEn(e.target.value) : setContentPt(e.target.value)}
-                                placeholder={lang === 'en' ? "# Write your analysis here..." : "# Escreva sua análise aqui..."}
-                                className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed text-[var(--color-text-body)] resize-y border border-[var(--color-border)] border-t-0 focus:border-[var(--color-accent)] transition-colors"
-                            />
+                        {originalSlug && (
+                            <button
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="w-full py-2 border border-red-900/30 text-red-900/70 hover:bg-red-900/10 hover:text-red-500 transition-colors text-[10px] uppercase font-bold disabled:opacity-50"
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete Article'}
+                            </button>
                         )}
                     </div>
                 </div>
+
+                {/* Main Content Panel */}
+                <div className={`${dualMode ? 'lg:col-span-10' : 'md:col-span-8'} space-y-8`}>
+                    
+                    {dualMode ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* English Column */}
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase tracking-widest text-[var(--color-accent)] font-bold">EN - Title</label>
+                                    <input
+                                        value={titleEn}
+                                        onChange={e => setTitleEn(e.target.value)}
+                                        className="w-full bg-transparent text-2xl font-serif font-bold text-[var(--color-text-heading)] outline-none"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <EditorToolbar
+                                        textareaRef={contentEnRef}
+                                        onInsert={(t) => {
+                                            const start = contentEnRef.current?.selectionStart || 0;
+                                            const end = contentEnRef.current?.selectionEnd || 0;
+                                            setContentEn(contentEn.substring(0, start) + t + contentEn.substring(end));
+                                        }}
+                                        showPreview={showPreview}
+                                        onTogglePreview={() => setShowPreview(!showPreview)}
+                                    />
+                                    {showPreview ? (
+                                        <div className="min-h-[500px] bg-[var(--color-bg-paper)] p-6 border border-[var(--color-border)] preview-content prose prose-invert prose-sm max-w-none">
+                                            <Markdown>{contentEn.replace(/\\n/g, '\n')}</Markdown>
+                                        </div>
+                                    ) : (
+                                        <textarea
+                                            ref={contentEnRef}
+                                            value={contentEn}
+                                            onChange={e => setContentEn(e.target.value)}
+                                            className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed border border-[var(--color-border)] border-t-0 focus:border-[var(--color-accent)] resize-y"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Portuguese Column */}
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase tracking-widest text-[var(--color-accent)] font-bold">PT - Título</label>
+                                    <input
+                                        value={titlePt}
+                                        onChange={e => setTitlePt(e.target.value)}
+                                        className="w-full bg-transparent text-2xl font-serif font-bold text-[var(--color-text-heading)] outline-none"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <EditorToolbar
+                                        textareaRef={contentPtRef}
+                                        onInsert={(t) => {
+                                            const start = contentPtRef.current?.selectionStart || 0;
+                                            const end = contentPtRef.current?.selectionEnd || 0;
+                                            setContentPt(contentPt.substring(0, start) + t + contentPt.substring(end));
+                                        }}
+                                        showPreview={showPreview}
+                                        onTogglePreview={() => setShowPreview(!showPreview)}
+                                    />
+                                    {showPreview ? (
+                                        <div className="min-h-[500px] bg-[var(--color-bg-paper)] p-6 border border-[var(--color-border)] preview-content prose prose-invert prose-sm max-w-none">
+                                            <Markdown>{contentPt.replace(/\\n/g, '\n')}</Markdown>
+                                        </div>
+                                    ) : (
+                                        <textarea
+                                            ref={contentPtRef}
+                                            value={contentPt}
+                                            onChange={e => setContentPt(e.target.value)}
+                                            className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed border border-[var(--color-border)] border-t-0 focus:border-[var(--color-accent)] resize-y"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        // Standard Single Mode (Current UI)
+                        <>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-meta)]">
+                                        Title ({lang.toUpperCase()})
+                                    </label>
+                                </div>
+                                <input
+                                    value={lang === 'en' ? titleEn : titlePt}
+                                    onChange={e => lang === 'en' ? setTitleEn(e.target.value) : setTitlePt(e.target.value)}
+                                    placeholder={lang === 'en' ? "Article Title" : "Título do Artigo"}
+                                    className="w-full bg-transparent text-3xl md:text-4xl font-serif font-bold text-[var(--color-text-heading)] placeholder-opacity-20 placeholder-[var(--color-text-muted)] outline-none"
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <div className="mt-6">
+                                    <EditorToolbar
+                                        textareaRef={lang === 'en' ? contentEnRef : contentPtRef}
+                                        onInsert={handleInsert}
+                                        showPreview={showPreview}
+                                        onTogglePreview={() => setShowPreview(!showPreview)}
+                                    />
+                                </div>
+
+                                {showPreview ? (
+                                    <div className="min-h-[600px] bg-[var(--color-bg-paper)] p-6 border border-[var(--color-border)] preview-content prose prose-invert prose-lg max-w-none">
+                                        <Markdown>{safeContent}</Markdown>
+                                    </div>
+                                ) : (
+                                    <textarea
+                                        ref={lang === 'en' ? contentEnRef : contentPtRef}
+                                        value={lang === 'en' ? contentEn : contentPt}
+                                        onChange={e => lang === 'en' ? setContentEn(e.target.value) : setContentPt(e.target.value)}
+                                        placeholder={lang === 'en' ? "# Write your analysis here..." : "# Escreva sua análise aqui..."}
+                                        className="w-full h-[600px] bg-[var(--color-bg-paper)] p-6 outline-none font-mono text-sm leading-relaxed text-[var(--color-text-body)] resize-y border border-[var(--color-border)] border-t-0 focus:border-[var(--color-accent)] transition-colors"
+                                    />
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
+
     );
 };
 
