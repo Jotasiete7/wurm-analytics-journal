@@ -1,4 +1,4 @@
-import { Twitter, Linkedin, Link2, Check } from 'lucide-react';
+import { Link2, Check, MessageCircle, Share2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface ShareButtonsProps {
@@ -10,8 +10,22 @@ export default function ShareButtons({ title, url }: ShareButtonsProps) {
     const [copied, setCopied] = useState(false);
 
     const shareUrls = {
-        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
+        whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(title + ': ' + url)}`
+    };
+
+    const handleNativeShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: title,
+                    url: url
+                });
+            } catch (err) {
+                console.log('Share cancelled or failed');
+            }
+        } else {
+            copyToClipboard();
+        }
     };
 
     const copyToClipboard = async () => {
@@ -29,26 +43,24 @@ export default function ShareButtons({ title, url }: ShareButtonsProps) {
             <span className="text-xs uppercase tracking-widest text-wurm-muted font-mono">Share:</span>
 
             <a
-                href={shareUrls.twitter}
+                href={shareUrls.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-1.5 border border-wurm-border hover:border-wurm-accent hover:text-wurm-accent transition-colors text-xs uppercase tracking-wider"
-                title="Share on Twitter"
+                title="Share on WhatsApp"
             >
-                <Twitter size={14} />
-                <span className="hidden sm:inline">Twitter</span>
+                <MessageCircle size={14} />
+                <span className="hidden sm:inline">WhatsApp</span>
             </a>
 
-            <a
-                href={shareUrls.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
+            <button
+                onClick={handleNativeShare}
                 className="flex items-center gap-2 px-3 py-1.5 border border-wurm-border hover:border-wurm-accent hover:text-wurm-accent transition-colors text-xs uppercase tracking-wider"
-                title="Share on LinkedIn"
+                title="Share using system menu"
             >
-                <Linkedin size={14} />
-                <span className="hidden sm:inline">LinkedIn</span>
-            </a>
+                <Share2 size={14} />
+                <span className="hidden sm:inline">Partilhar</span>
+            </button>
 
             <button
                 onClick={copyToClipboard}
@@ -56,7 +68,7 @@ export default function ShareButtons({ title, url }: ShareButtonsProps) {
                 title="Copy link"
             >
                 {copied ? <Check size={14} className="text-green-500" /> : <Link2 size={14} />}
-                <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
+                <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Copiar Link'}</span>
             </button>
         </div>
     );
